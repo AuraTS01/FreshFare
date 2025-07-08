@@ -9,7 +9,7 @@ session_start();
 
 $_SESSION['user']= "live";
 
-$login_db =  new mysqli("localhost","root","","own_login_1");
+$login_db =  new mysqli("localhost","root","root","FreshFare");
 
 $default = "undefined";
 
