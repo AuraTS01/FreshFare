@@ -33,10 +33,10 @@ if (isset($_SESSION['user']))
                             <span>All Items</span>
                         </div>
                         <ul>
-                            <li><a href="#">Chicken</a></li>
-                            <li><a href="#">Mutton</a></li>
-                            <li><a href="#">Fish</a></li>
-                            <li><a href="#">Prawns</a></li>
+                            <li><a href="./dashboard#targetSection">Chicken</a></li>
+                            <li><a href="./dashboard#targetSection">Mutton</a></li>
+                            <li><a href="./dashboard#targetSection">Fish</a></li>
+                            <li><a href="./dashboard#targetSection">Prawns</a></li>
                             <!-- <li><a href="#">Ocean Foods</a></li>
                             <li><a href="#">Butter & Eggs</a></li>
                             <li><a href="#">Fastfood</a></li>
@@ -100,7 +100,7 @@ if (isset($_SESSION['user']))
             <div class="row">
                 <div class="col-lg-12">
                     <div class="shoping__cart__table">
-                        <table>
+                        <table class="shoping__cart__table">
                             <thead>
                                 <tr>
                                     <th class="shoping__product">Products</th>

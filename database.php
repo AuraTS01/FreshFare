@@ -9,11 +9,11 @@ session_start();
 
 $_SESSION['user']= "live";
 
-$login_db =  new mysqli("localhost","root","root","FreshFare");
+$login_db =  new mysqli("localhost","root","","FreshFare");
 
 $default = "undefined";
 
-
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); // Add this near top of file
 
 
 
@@ -45,8 +45,8 @@ if (isset($_POST['signup_submit'])) {
         exit();
     }
 
-    $sql = "INSERT INTO fresh_fare_signup (username, email, mob_num, password, category, access, role)
-            VALUES ('$name', '$email', '$mobile', '$hashedPassword', '$category', '$access', '$default')";
+    $sql = "INSERT INTO fresh_fare_signup (`username`, `email`, `mob_num`, `password`, `category`, `access`, `role`, `country` , `Address_1`, `Address_2` ,`town`,`state` ,`zipCode` )
+            VALUES ('$name', '$email', '$mobile', '$hashedPassword', '$category', '$access', '$default', '$default', '$default', '$default', '$default', '$default', '1')";
 
     if (mysqli_query($login_db, $sql)) {
         echo "Account created successfully!";
@@ -120,7 +120,7 @@ if(isset($_POST['billingAddressSave'])){
         $check_sql = "UPDATE fresh_fare_signup SET `country` = '$country', `Address_1` = '$Address_1', `Address_2` = '$Address_2',`town` = '$town',`state` = '$state' ,`zipCode` = '$zipCode' WHERE `email` = '$email' AND `mob_num`='$contactNumber'";
         
         if(mysqli_query($login_db,$check_sql)){
-            header("Location:checkout?Billing Address Updated");
+            header("Location:checkout?msg=Billing Address Updated");
         }
         
         
@@ -129,14 +129,133 @@ if(isset($_POST['billingAddressSave'])){
         $check_sql = "UPDATE fresh_fare_signup SET `country` = '$country', `Address_1` = '$Address_1', `Address_2` = '',`town` = '$town',`state` = '$state',`zipCode` = '$zipCode' WHERE `email` = '$email' AND `mob_num`='$contactNumber'";
        
         if(mysqli_query($login_db,$check_sql)){
-            header("Location:checkout?Billing Address Updated");
+            header("Location:checkout?msg=Billing Address Updated");
         }
     }
 }
 
+// === SAVE ORDER: from frontend JavaScript fetch request ===
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] === 'save_order') {
+    header("Content-Type: application/json");
+
+    if (!isset($_SESSION['email'])) {
+        echo json_encode(['status' => 'error', 'message' => 'User not logged in']);
+        exit;
+    }
+
+    // Decode JSON input
+    $data = json_decode(file_get_contents("php://input"), true);
+    $payment_mode = $data['payment_mode'] ?? 'unknown';
+    $cart = $data['cart'] ?? [];
+
+    // Debug: log raw cart
+    error_log("Received cart data: " . print_r($cart, true));
+
+    if (empty($cart)) {
+        echo json_encode(['status' => 'error', 'message' => 'Cart is empty']);
+        exit;
+    }
+
+    // Calculate total price
+    $total = 0;
+    foreach ($cart as $item) {
+        $price = isset($item['price']) ? (float)$item['price'] : 0;
+        $quantity = isset($item['quantity']) ? (int)$item['quantity'] : 0;
+        $total += $price * $quantity;
+    }
+
+    // Get customer ID from session
+    $email = $_SESSION['email'];
+    $stmt = $login_db->prepare("SELECT id FROM fresh_fare_signup WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $res = $stmt->get_result();
+
+    if ($res->num_rows === 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Customer not found']);
+        exit;
+    }
+
+    $customer_id = $res->fetch_assoc()['id'];
+    $stmt->close();
+
+    // Insert order
+    $order_id = "ORD" . rand(100000, 999999);
+    $order_date = date("Y-m-d H:i:s");
+    $stmt = $login_db->prepare("INSERT INTO orders (customer_id, order_id, order_date, payment_mode, total_price) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("isssd", $customer_id, $order_id, $order_date, $payment_mode, $total);
+    $stmt->execute();
+    $order_db_id = $stmt->insert_id;
+    $stmt->close();
+
+    // Insert each item
+    foreach ($cart as $item) {
+        $item_name = $item['name'] ?? 'Unknown';
+        $quantity = isset($item['quantity']) ? (int)$item['quantity'] : 0;
+        $price = isset($item['price']) ? (float)$item['price'] : 0;
+        $unit = 'Kg'; // default unit
+
+        $stmt = $login_db->prepare("INSERT INTO order_items (order_id, customer_id, item_name, quantity, unit, price) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("iisdss", $order_db_id, $customer_id, $item_name, $quantity, $unit, $price);
+
+        try {
+            $stmt->execute();
+        } catch (mysqli_sql_exception $e) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Item insert failed: ' . $e->getMessage(),
+                'failed_item' => $item
+            ]);
+            exit;
+        }
+
+        $stmt->close();
+    }
+
+    // All done
+    echo json_encode(['status' => 'success', 'order_id' => $order_id]);
+    exit;
+}
 
 
+if (isset($_POST['enroll_company'])) {
+    $company_name    = mysqli_real_escape_string($login_db, $_POST['company_name']);
+    $company_address = mysqli_real_escape_string($login_db, $_POST['company_address']);
+    $email           = mysqli_real_escape_string($login_db, $_POST['email']);
+    $mobile          = mysqli_real_escape_string($login_db, $_POST['mob_num']);
+    $password        = mysqli_real_escape_string($login_db, $_POST['password']);
+    $category        = "company";
 
+    // Process selling items
+    $selling         = isset($_POST['selling']) ? implode(', ', $_POST['selling']) : '';
+    $chicken_options = isset($_POST['chicken_options']) ? implode(', ', $_POST['chicken_options']) : '';
+
+    if (strpos($selling, 'Chicken') !== false && $chicken_options !== '') {
+        $selling .= ' (' . $chicken_options . ')';
+    }
+
+    // ✅ 1. Insert into `company_registration` table
+    $insert_company = "INSERT INTO company_registration 
+        (company_name, company_address, email, mobile, selling_items)
+        VALUES 
+        ('$company_name', '$company_address', '$email', '$mobile', '$selling')";
+    
+    $company_result = mysqli_query($login_db, $insert_company);
+
+    // ✅ 2. Insert into `signup` table with role as `company`
+    $insert_signup = "INSERT INTO fresh_fare_signup 
+        (username, email, mob_num, password, category, `role`, `access`, `country`, `Address_1`, `Address_2`, `town`, `state`, `zipCode`)
+        VALUES 
+        ('$company_name', '$email', '$mobile', '$password', '$category',  '$default', 1, '$default', '$default', '$default', '$default', '$default', '1')";
+    
+    $signup_result = mysqli_query($login_db, $insert_signup);
+
+    if ($company_result && $signup_result) {
+        echo "<script>alert('Company registered successfully!'); window.location.href = 'enroll_company';</script>";
+    } else {
+        echo "<script>alert('Error: " . mysqli_error($login_db) . "'); window.location.href = 'enroll_company';</script>";
+    }
+}
 
 ?>
 

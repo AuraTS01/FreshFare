@@ -33,10 +33,10 @@ if (isset($_SESSION['user']))
                             <span>All Items</span>
                         </div>
                         <ul>
-                            <li><a href="#">Chicken</a></li>
-                            <li><a href="#">Mutton</a></li>
-                            <li><a href="#">Fish</a></li>
-                            <li><a href="#">Prawns</a></li>
+                            <li><a href="./dashboard#targetSection">Chicken</a></li>
+                            <li><a href="./dashboard#targetSection">Mutton</a></li>
+                            <li><a href="./dashboard#targetSection">Fish</a></li>
+                            <li><a href="./dashboard#targetSection">Prawns</a></li>
                             <!-- <li><a href="#">Ocean Foods</a></li>
                             <li><a href="#">Butter & Eggs</a></li>
                             <li><a href="#">Fastfood</a></li>
@@ -93,18 +93,23 @@ if (isset($_SESSION['user']))
         </div>
     </section>
     <!-- Breadcrumb Section End -->
-
+    <?php if (isset($_GET['msg']) && strpos($_GET['msg'], 'updated') !== false): ?>
+                <div class="alert alert-success">Billing details updated successfully!</div>
+        <?php endif; ?>
     <!-- Checkout Section Begin -->
     <section class="checkout spad">
         <div class="container">
-            <div class="row">
+            <!-- <div class="row">
                 <div class="col-lg-12">
-                    <h6><span class="icon_tag_alt"></span> Have a coupon? <a href="#">Click here</a> to enter your code
+                    <h6>
+                        <span class="icon_tag_alt"></span> Have a coupon? <a href="#">Click here</a> to enter your code
                     </h6>
                 </div>
-            </div>
-
+            </div> -->
             
+
+
+                <p>Note : If you have already saved your billing Address and its not visisble, Kindly logout and Login back, You will be provided with the Address that are saved.</p>
                 <div class="checkout__form">
                     <h4>Billing Details</h4>
                     <form action="./checkout" method="POST" >
@@ -124,7 +129,7 @@ if (isset($_SESSION['user']))
                                 </div>
                                 <div class="checkout__input">
                                     <p>Address<span>*</span></p>
-                                    <input type="text" name="Address_1" id="Address_1" placeholder="Street Address" class="checkout__input__add" value="<?php echo $_SESSION['Address_1']; ?>" required>
+                                    <input type="text" name="Address_1" id="Address_1" placeholder="Street Address" class="checkout__input__add" value="<?php echo $_SESSION['Address_1'];; ?>" required>
                                     <input type="text" name="Address_2" id="Address_2" placeholder="Apartment, suite, unite ect (optinal)" value="<?php echo $_SESSION['Address_2']; ?>">
                                 </div>
                                 <div class="checkout__input">

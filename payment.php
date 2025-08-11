@@ -26,7 +26,7 @@ if (isset($_SESSION['user']))
 
         <form id="paymentForm">
             <div class="form-check payment-option">
-                <input class="form-check-input" type="radio" name="paymentMethod" id="cardOption" value="card" checked>
+                <input class="form-check-input" type="radio" name="paymentMethod" id="cardOption" value="card" >
                 <label class="form-check-label" for="cardOption">
                 Credit/Debit Card
                 </label>
@@ -40,7 +40,7 @@ if (isset($_SESSION['user']))
             </div>
 
             <div class="form-check payment-option">
-                <input class="form-check-input" type="radio" name="paymentMethod" id="codOption" value="cod">
+                <input class="form-check-input" type="radio" name="paymentMethod" id="codOption" value="cod" checked>
                 <label class="form-check-label" for="codOption">
                     Pay on Delivery
                 </label>    

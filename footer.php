@@ -1,12 +1,18 @@
-
+</div>
     <!-- Footer Section Begin -->
-    <footer class="footer spad">
+    <footer class="footer">
         <div class="container">
             <div class="row">
                 <div class="col-lg-4 col-md-6 col-sm-6 offset-lg-4">
                     <div class="footer__about">
-                        <div class="footer__about__logo">
-                            <a href="./index.html"><img src="img/logo.png" alt=""></a>
+                       <div class="header__logo d-flex align-items-center">
+                            <a href="./index.php" class="logo-brand d-flex align-items-center text-decoration-none">
+                                <img src="img/logo.png" alt="Logo" class="logo-img">
+                                <span class="logo-text">
+                                <span class="logo-green">F</span><span class="logo-black">resh </span>
+                                <span class="logo-green">F</span><span class="logo-black">are</span>
+                                </span>
+                            </a>
                         </div>
                         <ul>
                             <li>Address: 278/4A1, Bharathi Estate Part 3, Karamadai, Mettupalayam</li>
@@ -77,92 +83,9 @@
     <script src="js/owl.carousel.min.js"></script>
     <script src="js/main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>   
-    <script>
+    
 
-        const products = [
-            "Laptop",
-            "Smartphone",
-            "Headphones",
-            "Smartwatch",
-            "Keyboard",
-            "Mouse"
-            ];
-
-            const searchInput = document.getElementById("searchInput");
-            const productList = document.getElementById("productList");
-
-            // Display all products initially
-            function displayProducts(filteredProducts) {
-            productList.innerHTML = "";
-            filteredProducts.forEach(product => {
-                const li = document.createElement("li");
-                li.textContent = product;
-                productList.appendChild(li);
-            });
-            }
-
-            // Filter on input
-            searchInput.addEventListener("input", () => {
-            const query = searchInput.value.toLowerCase();
-            const filtered = products.filter(product =>
-                product.toLowerCase().includes(query)
-            );
-            displayProducts(filtered);
-            });
-
-            // Initial display
-        displayProducts(products);
-
-    </script>
-
-    <script>
-
-        const products = [
-            { id: 1, name: "Chicken", price: 200 },
-            { id: 2, name: "Smartphone", price: 800 },
-            { id: 3, name: "Headphones", price: 200 }
-            ];
-
-            const cart = [];
-
-            const productList = document.getElementById("productList");
-            const cartList = document.getElementById("cartList");
-
-            // Render product list
-            products.forEach(product => {
-            const div = document.createElement("div");
-            div.innerHTML = `
-                <strong>${product.name}</strong> - $${product.price}
-                <button onclick="addToCart(${product.id})">Add to Cart</button>
-            `;
-            productList.appendChild(div);
-            });
-
-            // Add item to cart
-            function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            const cartItem = cart.find(item => item.id === productId);
-
-            if (cartItem) {
-                cartItem.quantity += 1;
-            } else {
-                cart.push({ ...product, quantity: 1 });
-            }
-
-            renderCart();
-            }
-
-            // Render cart
-            function renderCart() {
-            cartList.innerHTML = "";
-            cart.forEach(item => {
-                const li = document.createElement("li");
-                li.textContent = `${item.name} - $${item.price} x ${item.quantity}`;
-                cartList.appendChild(li);
-            });
-            }
-
-    </script>
+   
     <script>
         function addToCart(button, name, price) {
             const cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -176,9 +99,9 @@
                 // Button styling
                 button.innerHTML = `<i class="fa fa-shopping-cart"></i> View Cart`;
                 button.classList.remove("btn-success");
-                button.classList.add("btn-primary");
+                button.classList.add("btn-success");
             } else {
-                window.location.href = "shoping-cart.php";
+                window.location.href = "shoping-cart";
             }
         }
 
@@ -228,10 +151,10 @@
             let total = 0;
 
             if (cart.length === 0) {
-            cartBody.innerHTML = '<tr><td colspan="5" class="text-center">Your cart is empty.</td></tr>';
-            cartTotal.textContent = '0.00';
-            return;
-        }
+                cartBody.innerHTML = '<tr><td colspan="5" class="text-center">Your cart is empty.</td></tr>';
+                cartTotal.textContent = '0.00';
+                return;
+            }
 
         cart.forEach((item, index) => {
         const quantity = item.quantity || 1;
@@ -439,7 +362,7 @@
                 const itemTotal = item.price * qty;
 
                 const li = document.createElement("li");
-                li.innerHTML = `${item.name} × ${qty} <span>₹${itemTotal.toFixed(2)}</span>`;
+                li.innerHTML = `${item.name} × ${qty} Kg <span>₹${itemTotal.toFixed(2)}</span>`;
                 orderList.appendChild(li);
 
                 subtotal += itemTotal;
@@ -455,39 +378,39 @@
     <script>
         // Dummy placeholders (replace with real data if available)
         const customerInfo = {
-        name: localStorage.getItem('customerName') || "John Doe",
-        phone: localStorage.getItem('customerPhone') || "9876543210",
-        address: localStorage.getItem('customerAddress') || "123, Main Street, Mettupalayam"
+            name: localStorage.getItem('customerName') || "John Doe",
+            phone: localStorage.getItem('customerPhone') || "9876543210",
+            address: localStorage.getItem('customerAddress') || "123, Main Street, Mettupalayam"
         };
 
         const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
         function generateOrderId() {
-        return "ORD" + Date.now().toString().slice(-6);
+            return "ORD" + Date.now().toString().slice(-6);
         }
 
         function renderOrderDetails() {
-        document.getElementById("orderId").textContent = generateOrderId();
-        document.getElementById("customerName").textContent = customerInfo.name;
-        document.getElementById("customerPhone").textContent = customerInfo.phone;
-        document.getElementById("customerAddress").textContent = customerInfo.address;
+            document.getElementById("orderId").textContent = generateOrderId();
+            document.getElementById("customerName").textContent = customerInfo.name;
+            document.getElementById("customerPhone").textContent = customerInfo.phone;
+            document.getElementById("customerAddress").textContent = customerInfo.address;
 
-        const itemList = document.getElementById("orderedItemsList");
-        let subtotal = 0;
+            const itemList = document.getElementById("orderedItemsList");
+            let subtotal = 0;
 
-        cart.forEach(item => {
-            const quantity = item.quantity || 1;
-            const itemTotal = item.price * quantity;
-            subtotal += itemTotal;
+            cart.forEach(item => {
+                const quantity = item.quantity || 1;
+                const itemTotal = item.price * quantity;
+                subtotal += itemTotal;
 
-            const li = document.createElement("li");
-            li.className = "list-group-item d-flex justify-content-between align-items-center";
-            li.innerHTML = `${item.name} × ${quantity} <span>₹${itemTotal.toFixed(2)}</span>`;
-            itemList.appendChild(li);
-        });
+                const li = document.createElement("li");
+                li.className = "list-group-item d-flex justify-content-between align-items-center";
+                li.innerHTML = `${item.name} × ${quantity} Kg <span>₹${itemTotal.toFixed(2)}</span>`;
+                itemList.appendChild(li);
+            });
 
-        document.getElementById("subtotal").textContent = subtotal.toFixed(2);
-        document.getElementById("total").textContent = subtotal.toFixed(2);
+            document.getElementById("subtotal").textContent = subtotal.toFixed(2);
+            document.getElementById("total").textContent = subtotal.toFixed(2);
         }
 
         document.addEventListener("DOMContentLoaded", renderOrderDetails);
@@ -496,28 +419,54 @@
         const devNotice = document.getElementById("devNotice");
         const codSection = document.getElementById("codSection");
 
+        // Toggle payment method visibility
         document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
-            radio.addEventListener("change", () => {
+        radio.addEventListener("change", () => {
             const selected = radio.value;
             if (selected === "cod") {
-                codSection.classList.remove("d-none");
-                devNotice.classList.add("d-none");
+            codSection.classList.remove("d-none");
+            devNotice.classList.add("d-none");
             } else {
-                devNotice.classList.remove("d-none");
-                codSection.classList.add("d-none");
+            devNotice.classList.remove("d-none");
+            codSection.classList.add("d-none");
             }
-            });
+        });
         });
 
-        // Optional form handling
+        // 🟢 Place Order Submit Handler
         document.getElementById("paymentForm").addEventListener("submit", function (e) {
-            e.preventDefault();
-            const selected = document.querySelector("input[name='paymentMethod']:checked").value;
-            if (selected === "cod") {
-            alert("Order placed with Pay on Delivery.");
-            } else {
+        e.preventDefault();
+        const selected = document.querySelector("input[name='paymentMethod']:checked").value;
+
+        if (selected !== "cod") {
             alert("Please choose Pay on Delivery to continue.");
+            return;
+        }
+
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        fetch("database.php?action=save_order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                payment_mode: selected,
+                cart: cart
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+            localStorage.setItem("latest_order_id", data.order_id); // optional
+            localStorage.removeItem("cart"); // clear cart
+            window.location.href = "order_summary";
+            } else {
+            alert("Failed to place order: " + data.message);
             }
+        })
+        .catch(err => {
+            console.error("Order error:", err);
+            alert("Something went wrong. Please try again.");
+        });
         });
     </script>
     <script>
@@ -556,12 +505,25 @@
             localStorage.setItem("userName", username);
 
             // Redirect to homepage or checkout
-            window.location.href = "index.html"; // Change to checkout.html if needed
+            window.location.href = "./index"; // Change to checkout.html if needed
         } else {
             alertBox.textContent = "Invalid credentials. Please try again.";
             alertBox.classList.remove("d-none");
         }
         });
+    </script>
+
+    <script>
+        const chkChicken = document.getElementById('chkChicken');
+        const chickenOptions = document.getElementById('chickenOptions');
+
+        chkChicken.addEventListener('change', () => {
+            chickenOptions.style.display = chkChicken.checked ? 'block' : 'none';
+        });
+
+        function generateDefaultPassword() {
+            document.getElementById("password").value = "Password";
+        }
     </script>
   
 

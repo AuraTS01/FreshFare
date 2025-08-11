@@ -27,6 +27,11 @@
         <link rel="stylesheet" href="css/slicknav.min.css" type="text/css">
         <link rel="stylesheet" href="css/style.css" type="text/css">
         <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+
+        <script>
+            localStorage.clear();
+            sessionStorage.clear();
+        </script>
     </head>
 
     <body>
@@ -38,9 +43,14 @@
         <!-- Humberger Begin -->
         <div class="humberger__menu__overlay"></div>
         <div class="humberger__menu__wrapper">
-            <div class="humberger__menu__logo">
-                <a href="#"><img src="img/logo.png" alt=""></a>
-            
+            <div class="header__logo d-flex align-items-center">
+                <a href="./index.php" class="logo-brand d-flex align-items-center text-decoration-none">
+                    <img src="img/logo.png" alt="Logo" class="logo-img">
+                    <span class="logo-text">
+                    <span class="logo-green">F</span><span class="logo-black">resh </span>
+                    <span class="logo-green">F</span><span class="logo-black">are</span>
+                    </span>
+                </a>
             </div>
             <div class="humberger__menu__cart">
                 <!-- <ul>
@@ -137,8 +147,14 @@
             <div class="container">
                 <div class="row">
                     <div class="col-lg-3">
-                        <div class="header__logo">
-                            <a href="./index"><img src="img/logo.png" alt=""></a>
+                        <div class="header__logo d-flex align-items-center">
+                            <a href="./index.php" class="logo-brand d-flex align-items-center text-decoration-none">
+                                <img src="img/logo.png" alt="Logo" class="logo-img">
+                                <span class="logo-text">
+                                <span class="logo-green">F</span><span class="logo-black">resh </span>
+                                <span class="logo-green">F</span><span class="logo-black">are</span>
+                                </span>
+                            </a>
                         </div>
                     </div>
                     <div class="col-lg-6">
@@ -184,7 +200,7 @@
         </header>
 
 
-        <div class="login-container">
+        <div class="login-container p-4 rounded">
             <h3 class="text-center mb-4">Login</h3>
             <div id="loginAlert" class="alert alert-danger d-none"></div>
 

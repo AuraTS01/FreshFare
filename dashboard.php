@@ -69,10 +69,10 @@ if (isset($_SESSION['user']))
                             <span>All Items</span>
                         </div>
                         <ul>
-                            <li><a href="#">Chicken</a></li>
-                            <li><a href="#">Mutton</a></li>
-                            <li><a href="#">Fish</a></li>
-                            <li><a href="#">Prawns</a></li>
+                            <li><a href="#targetSection">Chicken</a></li>
+                            <li><a href="#targetSection">Mutton</a></li>
+                            <li><a href="#targetSection">Fish</a></li>
+                            <li><a href="#targetSection">Prawns</a></li>
                             <!-- <li><a href="#">Ocean Foods</a></li>
                             <li><a href="#">Butter & Eggs</a></li>
                             <li><a href="#">Fastfood</a></li>
