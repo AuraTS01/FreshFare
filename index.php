@@ -198,7 +198,12 @@
                 </div>
             </div>
         </header>
-
+        <?php 
+            if(isset($_GET['msg']) || isset($_GET['err'])){
+                $msg = isset($_GET['msg'])? $_GET['msg']:$_GET['err'];
+                showAlert($msg);
+            }
+        ?>
 
         <div class="login-container p-4 rounded">
             <h3 class="text-center mb-4">Login</h3>

@@ -119,42 +119,42 @@ if (isset($_SESSION['user']))
                                     
                                 <div class="checkout__input">
                                     <p>Full Name<span>*</span></p>
-                                    <input type="text" name="fullname" id="fullname" value="<?php echo $_SESSION['username']; ?>" required>
+                                    <input type="text" name="fullname" id="fullname" value="<?php echo $no['username']; ?>" required>
                                 </div>
                                 
                                     
                                 <div class="checkout__input">
                                     <p>Country<span>*</span></p>
-                                    <input type="text" name="country" id="country" value="India" required>
+                                    <input type="text" name="country" id="country" value="India" required readonly>
                                 </div>
                                 <div class="checkout__input">
                                     <p>Address<span>*</span></p>
-                                    <input type="text" name="Address_1" id="Address_1" placeholder="Street Address" class="checkout__input__add" value="<?php echo $_SESSION['Address_1'];; ?>" required>
-                                    <input type="text" name="Address_2" id="Address_2" placeholder="Apartment, suite, unite ect (optinal)" value="<?php echo $_SESSION['Address_2']; ?>">
+                                    <input type="text" name="Address_1" id="Address_1" placeholder="Street Address" class="checkout__input__add" value="<?php echo $no['Address_1'];; ?>" required>
+                                    <input type="text" name="Address_2" id="Address_2" placeholder="Apartment, suite, unite ect (optinal)" value="<?php echo $no['Address_2']; ?>">
                                 </div>
                                 <div class="checkout__input">
                                     <p>Town/City<span>*</span></p>
-                                    <input type="text" name="town" id="town" value="<?php echo $_SESSION['town']; ?>" required> 
+                                    <input type="text" name="town" id="town" value="<?php echo $no['town']; ?>" required> 
                                 </div>
                                 <div class="checkout__input">
                                     <p>State<span>*</span></p>
-                                    <input type="text" name="state" id="state" value="<?php echo $_SESSION['state']; ?>" required>
+                                    <input type="text" name="state" id="state" value="<?php echo $no['state']; ?>" required>
                                 </div>
                                 <div class="checkout__input">
                                     <p>Postcode / ZIP<span>*</span></p>
-                                    <input type="text" name="zipCode" id="zipCode" value="<?php echo $_SESSION['zipCode']; ?>" required>
+                                    <input type="text" name="zipCode" id="zipCode" value="<?php echo $no['zipCode']; ?>" required>
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="checkout__input">
                                             <p>Phone<span>*</span></p>
-                                            <input type="number" name="contactNumber" id="contactNumber" value="<?php echo $_SESSION['mob_num']; ?>" required>
+                                            <input type="number" name="contactNumber" id="contactNumber" value="<?php echo $no['mob_num']; ?>" required>
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="checkout__input">
                                             <p>Email<span>*</span></p>
-                                            <input type="text" name="email" id="email" value="<?php echo $_SESSION['email']; ?>" required>
+                                            <input type="text" name="email" id="email" value="<?php echo $no['email']; ?>" required>
                                         </div>
                                     </div>
                                 </div>
@@ -178,12 +178,12 @@ if (isset($_SESSION['user']))
                                         <span class="checkmark"></span>
                                     </label>
                                 </div> -->
-                                <div class="checkout__input">
+                                <!-- <div class="checkout__input">
                                     <p>Order notes<span>*</span></p>
                                     <input type="text"
                                         placeholder="Notes about your order, e.g. special notes for delivery.">
                                         
-                                </div>
+                                </div> -->
                                 <div class="checkout__input">
                                     <button type="submit" name="billingAddressSave" class="primary-btn">Save Billing Details</button>
                                 </div>

@@ -57,8 +57,9 @@ if (isset($_SESSION['user']))
           $msg = isset($_GET['msg'])? $_GET['msg']:$_GET['err'];
           showAlert($msg);
         }
-    
+        
     ?>
+    
     <section class="hero">
         <div class="container">
             <div class="row">
@@ -164,193 +165,256 @@ if (isset($_SESSION['user']))
     <!-- Categories Section End -->
 
     <!-- Featured Section Begin -->
-    <section id="targetSection" class="featured spad">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="section-title">
-                        <h2>Order Products </h2>
+
+             
+       <?php
+        // -----------------------------------------------
+        // Helpers
+        // -----------------------------------------------
+
+        // Split items by commas but ignore commas inside parentheses.
+        function splitTopLevelItems(string $s): array {
+            $items = [];
+            $buf = '';
+            $depth = 0;
+            $len = strlen($s);
+
+            for ($i = 0; $i < $len; $i++) {
+                $ch = $s[$i];
+                if ($ch === '(') {
+                    $depth++;
+                    $buf .= $ch;
+                } elseif ($ch === ')') {
+                    if ($depth > 0) $depth--;
+                    $buf .= $ch;
+                } elseif ($ch === ',' && $depth === 0) {
+                    $trim = trim($buf);
+                    if ($trim !== '') $items[] = $trim;
+                    $buf = '';
+                } else {
+                    $buf .= $ch;
+                }
+            }
+            $trim = trim($buf);
+            if ($trim !== '') $items[] = $trim;
+
+            return $items;
+        }
+
+        // Expand "Base(Var1, Var2)" => ["Base Var1", "Base Var2"].
+        // If no parentheses, return the item as-is.
+        function expandItem(string $item): array {
+            // Match: everything up to "(", then inside ")"
+            if (preg_match('/^([^(]+)\(([^)]*)\)$/', $item, $m)) {
+                $base = trim(preg_replace('/\s+/', ' ', $m[1]));       // e.g., "Chicken"
+                $inside = $m[2];                                       // e.g., "With Skin, Without Skin"
+                $parts = array_map('trim', explode(',', $inside));
+                $out = [];
+                foreach ($parts as $p) {
+                    if ($p !== '') {
+                        $name = $base . ' ' . $p;
+                        $name = trim(preg_replace('/\s+/', ' ', $name));
+                        $out[] = $name;
+                    }
+                }
+                return $out;
+            }
+            // No variants
+            $clean = trim(preg_replace('/\s+/', ' ', $item));
+            return [$clean];
+        }
+
+        // Map a normalized product name to a price column from $row.
+        function mapPrice(string $name, array $row): float {
+            $n = strtolower($name);
+            if (strpos($n, 'chicken with skin') !== false) {
+                return (float)$row['chicken_with_skin_price'];
+            }
+            if (strpos($n, 'chicken without skin') !== false) {
+                return (float)$row['chicken_without_skin_price'];
+            }
+            if (strpos($n, 'mutton') !== false) {
+                return (float)$row['mutton_price'];
+            }
+            if (strpos($n, 'fish') !== false) {
+                return (float)$row['fish_price'];
+            }
+            if (strpos($n, 'prawn') !== false) {
+                return (float)$row['prawn_price'];
+            }
+            if (strpos($n, 'kadai') !== false) {
+                return (float)$row['kadai_price'];
+            }
+            return 0.0;
+        }
+
+        // -----------------------------------------------
+        // Query (also select cr.logo which you use below)
+        // -----------------------------------------------
+        $sql = "SELECT cr.company_id, cr.company_name, cr.email, cr.selling_items,
+                    ip.chicken_with_skin_price, ip.chicken_without_skin_price, 
+                    ip.prawn_price, ip.mutton_price, ip.fish_price, ip.kadai_price
+                FROM company_registration cr
+                JOIN item_price ip ON cr.company_id = ip.company_id";
+        $result = mysqli_query($login_db, $sql);
+        ?>
+
+        <section id="targetSection" class="featured spad">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section-title">
+                            <h2>Choose Your Butcher Shops</h2>
+                        </div>
                     </div>
-                    <div class="featured__controls">
-                        <ul>
-                            <!-- <li class="active" data-filter="*">All</li> -->
-                            <!-- <li data-filter=".oranges">Oranges</li> -->
-                            <li data-filter=".fresh-meat">Fresh Meat</li>
-                            <!-- <li data-filter=".vegetables">Vegetables</li>
-                            <li data-filter=".fastfood">Fastfood</li> -->
-                        </ul>
-                    </div>
+                </div>
+                <div class="row featured__filter">
+                    <?php if ($result && mysqli_num_rows($result) > 0): ?>
+                        <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                            <?php
+                                $companyId   = $row['company_id'];
+                                $companyName = htmlspecialchars($row['company_name']);
+                                $address     = htmlspecialchars($row['email']);
+                                $logo        = !empty($row['logo']) ? "./uploads/company_logos/" . $row['logo'] : "img/featured/default_company.jpg";
+
+                                // 1) Split top-level items safely
+                                $topLevelItems = splitTopLevelItems($row['selling_items']);
+
+                                // 2) Expand variants and build products with prices
+                                $products = [];
+                                foreach ($topLevelItems as $it) {
+                                    foreach (expandItem($it) as $fullName) {
+                                        $name  = trim(preg_replace('/\s+/', ' ', str_replace([ '(', ')', ',' ], '', $fullName)));
+                                        // Safety: if someone typed only "With Skin" or "Without Skin", prepend "Chicken"
+                                        if (preg_match('/^(with skin|without skin)$/i', $name)) {
+                                            $name = 'Chicken ' . $name;
+                                        }
+                                        $price = mapPrice($name, $row);
+                                        $products[] = [ 'name' => $name, 'price' => $price ];
+                                    }
+                                }
+
+                                // 3) Deduplicate by name (case-insensitive)
+                                $unique = [];
+                                foreach ($products as $p) {
+                                    $key = strtolower($p['name']);
+                                    if (!isset($unique[$key])) $unique[$key] = $p;
+                                }
+                                $uniqueItems = array_values($unique);
+                            ?>
+
+                            <!-- Company Card -->
+                            <div class="col-lg-3 col-md-4 col-sm-6 mix companies">
+                                <div class="featured__item">
+                                    <div class="featured__item__pic set-bg" data-setbg="<?php echo $logo; ?>">
+                                        <ul class="featured__item__pic__hover">
+                                            <li>
+                                                <button class="btn btn-primary"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#companyModal<?php echo $companyId; ?>">
+                                                    View Products
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="featured__item__text">
+                                        <h6>
+                                            <a href="#" data-bs-toggle="modal" data-bs-target="#companyModal<?php echo $companyId; ?>">
+                                                <?php echo $companyName; ?>
+                                            </a>
+                                        </h6>
+                                        <p><?php echo $address; ?></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Company Modal -->
+                            <div class="modal fade" id="companyModal<?php echo $companyId; ?>" tabindex="-1">
+                                <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title"><?php echo $companyName; ?> - Products - Choose Your Favorite Meat</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            
+                                            <div class="row g-3">
+                                               
+                                                <?php foreach ($uniqueItems as $product):
+                                                    $productName = htmlspecialchars($product['name']);
+                                                    $price = (float)$product['price'];
+
+                                                    // Image mapping
+                                                    $image = "img/featured/default.jpg";
+                                                    $ln = strtolower($productName);
+                                                    if (strpos($ln, "chicken with skin") !== false)   $image = "img/featured/chicken_flesh.jpg";
+                                                    elseif (strpos($ln, "chicken without skin") !== false) $image = "img/featured/chicken_withoutSkin.jpg";
+                                                    elseif (strpos($ln, "mutton") !== false)         $image = "img/featured/mutton.jpg";
+                                                    elseif (strpos($ln, "fish") !== false)           $image = "img/featured/fish.jpeg";
+                                                    elseif (strpos($ln, "prawn") !== false)          $image = "img/featured/prawns.jpg";
+                                                    elseif (strpos($ln, "kadai") !== false)          $image = "img/featured/kadai.jpeg";
+                                                ?>
+                                                    <div class="col-12 col-sm-6 col-lg-4">
+                                                        <div class="featured__item h-100">
+                                                            <div class="featured__item__pic set-bg"
+                                                                data-setbg="<?php echo $image; ?>"
+                                                                style="background-size: cover; background-position: center;">
+                                                                <ul class="featured__item__pic__hover">
+                                                                    <li>
+                                                                        <button class="btn btn-success btn-sm"
+                                                                                onclick="addToCart(this, '<?php echo $productName; ?>', <?php echo $price; ?>, <?php echo $row['company_id']; ?>)">
+                                                                            <i class="fa fa-shopping-cart"></i> Add to Cart
+                                                                        </button>
+                                                                    </li>
+                                                                </ul>
+
+                                                            </div>
+                                                            <div class="featured__item__text text-center">
+                                                                <h6 class="mt-2"><a href="#"><?php echo $productName; ?></a></h6>
+                                                                <h5>
+                                                                    <?php if ($price > 0): ?>
+                                                                        ₹<?php echo number_format($price, 2); ?>
+                                                                    <?php else: ?>
+                                                                        <span class="text-muted">Price not set</span>
+                                                                    <?php endif; ?>
+                                                                </h5>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p class="text-center w-100">No companies found.</p>
+                    <?php endif; ?>
                 </div>
             </div>
-            <div class="row featured__filter">
-                <div class="col-lg-3 col-md-4 col-sm-6 mix fresh-meat">
-                    <div class="featured__item">
-                        <div class="featured__item__pic set-bg" data-setbg="img/featured/fish.jpeg">
-                            <ul class="featured__item__pic__hover">
-                                <!-- <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                <li><a href="#"><i class="fa fa-retweet"></i></a></li> -->
-                                <li>
-                                    <button class="btn btn-success"
-                                            onclick="addToCart(this, 'Fish', 190)"
-                                            data-product-name="Fish">
-                                        <i class="fa fa-shopping-cart"></i> Add to Cart
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="featured__item__text">
-                            <h6><a href="#">Fresh Fish</a></h6>
-                            <h5>₹190.00</h5>
-                        </div>
-                        
-                    </div>
-                </div>
-                <!-- <div class="col-lg-3 col-md-4 col-sm-6 mix vegetables fastfood">
-                    <div class="featured__item">
-                        <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-2.jpg">
-                            <ul class="featured__item__pic__hover">
-                                <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                            </ul>
-                        </div>
-                        <div class="featured__item__text">
-                            <h6><a href="#">Crab Pool Security</a></h6>
-                            <h5>$30.00</h5>
-                        </div>
-                    </div>
-                </div> -->
-                <div class="col-lg-3 col-md-4 col-sm-6 mix fresh-meat">
-                    <div class="featured__item">
-                        <div class="featured__item__pic set-bg" data-setbg="img/featured/prawns.jpg">
-                            <ul class="featured__item__pic__hover">
-                               
-                                <li>
-                                    <button class="btn btn-success"
-                                            onclick="addToCart(this, 'Prawns', 200)"
-                                            data-product-name="Prawns">
-                                        <i class="fa fa-shopping-cart"></i> Add to Cart
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="featured__item__text">
-                            <h6><a href="#">Prawns</a></h6>
-                            <h5>₹260.00</h5>
-                        </div>
-                    </div>
-                </div>
-                <!-- <div class="col-lg-3 col-md-4 col-sm-6 mix fastfood oranges">
-                    <div class="featured__item">
-                        <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-4.jpg">
-                            <ul class="featured__item__pic__hover">
-                                <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                            </ul>
-                        </div>
-                        <div class="featured__item__text">
-                            <h6><a href="#">Crab Pool Security</a></h6>
-                            <h5>$30.00</h5>
-                        </div>
-                    </div>
-                </div> -->
-                <div class="col-lg-3 col-md-4 col-sm-6 mix fresh-meat">
-                    <div class="featured__item">
-                        <div class="featured__item__pic set-bg" data-setbg="img/featured/chicken_withoutSkin.jpg">
-                            <ul class="featured__item__pic__hover">
-                                <!-- <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                <li><a href="#"><i class="fa fa-retweet"></i></a></li> -->
-                                <li>
-                                    <button class="btn btn-success"
-                                            onclick="addToCart(this, 'Chicken Without Skin', 170)"
-                                            data-product-name="Chicken Without Skin">
-                                        <i class="fa fa-shopping-cart"></i> Add to Cart
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="featured__item__text">
-                            <h6><a href="#">Chicken Without Skin</a></h6>
-                            <h5>₹170.00</h5>
-                        </div>
-                    </div>
-                </div>
-                <!-- <div class="col-lg-3 col-md-4 col-sm-6 mix oranges fastfood">
-                    <div class="featured__item">
-                        <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-6.jpg">
-                            <ul class="featured__item__pic__hover">
-                                <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                            </ul>
-                        </div>
-                        <div class="featured__item__text">
-                            <h6><a href="#">Crab Pool Security</a></h6>
-                            <h5>$30.00</h5>
-                        </div>
-                    </div>
-                </div> -->
-                <div class="col-lg-3 col-md-4 col-sm-6 mix fresh-meat">
-                    <div class="featured__item">
-                        <div class="featured__item__pic set-bg" data-setbg="img/featured/chicken_flesh.jpg">
-                            <ul class="featured__item__pic__hover">
-                                <!-- <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                <li><a href="#"><i class="fa fa-retweet"></i></a></li> -->
-                                <li>
-                                    <button class="btn btn-success"
-                                            onclick="addToCart(this, 'Chicken With Skin', 190)"
-                                            data-product-name="Chicken With Skin">
-                                        <i class="fa fa-shopping-cart"></i> Add to Cart
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="featured__item__text">
-                            <h6><a href="#">Chicken with Skin</a></h6>
-                            <h5>₹190.00</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-4 col-sm-6 mix fresh-meat">
-                    <div class="featured__item">
-                        <div class="featured__item__pic set-bg" data-setbg="img/featured/fresh_raw_mutton_leg.jpg">
-                            <ul class="featured__item__pic__hover">
-                                <!-- <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                <li><a href="#"><i class="fa fa-retweet"></i></a></li> -->
-                                <li>
-                                    <button class="btn btn-success"
-                                            onclick="addToCart(this, 'Mutton', 800)"
-                                            data-product-name="Mutton">
-                                        <i class="fa fa-shopping-cart"></i> Add to Cart
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="featured__item__text">
-                            <h6><a href="#">Mutton</a></h6>
-                            <h5>₹800.00</h5>
-                        </div>
-                    </div>
-                </div>
-                <!-- <div class="col-lg-3 col-md-4 col-sm-6 mix fastfood vegetables">
-                    <div class="featured__item">
-                        <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-8.jpg">
-                            <ul class="featured__item__pic__hover">
-                                <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                            </ul>
-                        </div>
-                        <div class="featured__item__text">
-                            <h6><a href="#">Crab Pool Security</a></h6>
-                            <h5>$30.00</h5>
-                        </div>
-                    </div>
-                </div> -->
-            </div>
-        </div>
-    </section>
+        </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
     <!-- Featured Section End -->
 
     <!-- Banner Begin -->

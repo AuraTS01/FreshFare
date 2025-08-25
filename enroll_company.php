@@ -19,6 +19,14 @@ if (isset($_SESSION['user']))
     {
 
 ?>
+    <?php 
+        if(isset($_GET['msg']) || isset($_GET['err'])){
+          $msg = isset($_GET['msg'])? $_GET['msg']:$_GET['err'];
+          showAlert($msg);
+        }
+        
+    ?>
+   
     <div class="form-wrapper">
         <div class="form-container">
             <h2 class="mb-4 text-center">Enroll New Company</h2>
@@ -61,6 +69,10 @@ if (isset($_SESSION['user']))
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" name="selling[]" value="Prawn" id="chkPrawn">
                         <label class="form-check-label" for="chkPrawn">Prawn</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="selling[]" value="Kadai" id="chkKadai">
+                        <label class="form-check-label" for="chkKadai">Kadai</label>
                     </div>
                 </div>
                 <div class="mb-3">

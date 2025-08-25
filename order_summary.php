@@ -70,7 +70,7 @@ if (isset($_SESSION['user'])) {
           </p>
 
           <h5 class="mt-4">Order Details</h5>
-          <p><strong>Order ID:</strong> <?= htmlspecialchars($order['order_id']) ?></p>
+          <p><strong>Order ID:</strong> <?= htmlspecialchars($order['order_code']) ?></p>
           <p><strong>Date:</strong> <?= htmlspecialchars($order['order_date']) ?></p>
           <p><strong>Payment Mode:</strong> <?= htmlspecialchars($order['payment_mode']) ?></p>
 

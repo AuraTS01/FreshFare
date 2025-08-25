@@ -37,6 +37,8 @@ if (isset($_SESSION['user'])) {
     <link rel="stylesheet" href="css/owl.carousel.min.css" type="text/css">
     <link rel="stylesheet" href="css/slicknav.min.css" type="text/css">
     <link rel="stylesheet" href="css/style.css" type="text/css">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 </head>
 <body>
 
@@ -58,26 +60,32 @@ if (isset($_SESSION['user'])) {
         <div class="humberger__menu__widget">
             <div class="header__top__right__auth">
                 <a href="./logout"><i class="fa fa-user"></i> Logout</a>
+        
+                <ul>
+                    <?php if ($category === 'sup_admin'): ?>
+                        <li><a href="./adm_dashboard"><i class="fa fa-user"></i> Dashboard</a></li>
+                        <li><a href="./view_companies"><i class="fa fa-user"></i> View Registered Companies</a></li>
+                        <li><a href="./enroll_company"><i class="fa fa-user"></i> Enroll New Company</a></li>
+                        <li><a href="./order_list"><i class="fa fa-user"></i> View Orders List</a></li>
+                    <?php elseif ($category === 'company'): ?>
+                        <li><a href="./adm_dashboard"><i class="fa fa-user"></i> Dashboard</a></li>
+                        <li><a href="./view_items"><i class="fa fa-user"></i> View Listed Items</a></li>
+                    <?php elseif ($category === 'delivery_agent'):  ?>
+                        <li><a href="./deli_dashboard"><i class="fa fa-user"></i> Home</a></li>
+                        <li><a href="./view_undeliveredOrders"><i class="fa fa-user"></i> View Undelivered / Delivered Orders</a></li>
+                        
+                    <?php else: ?>
+                        <li><a href="./dashboard"><i class="fa fa-user"></i> Home</a></li>
+                        <li><a href="./shoping-cart"><i class="fa fa-user"></i> View Cart</a></li>
+                        <li><a href="./contact.html"><i class="fa fa-user"></i> Contact</a></li>
+                    <?php endif; ?>
+                
+                </ul>
+                
             </div>
+
         </div>
-
-        <nav class="humberger__menu__nav mobile-menu">
-            <ul>
-                <?php if ($category === 'sup_admin'): ?>
-                    <li><a href="./dashboard">Dashboard</a></li>
-                    <li><a href="./view_companies">View Registered Companies</a></li>
-                    <li><a href="./enroll_company">Enroll New Company</a></li>
-                <?php elseif ($category === 'company'): ?>
-                    <li><a href="./dashboard">Dashboard</a></li>
-                    <li><a href="./view_items">View Listed Items</a></li>
-                <?php else: ?>
-                    <li><a href="./dashboard">Home</a></li>
-                    <li><a href="./shoping-cart">View Cart</a></li>
-                    <li><a href="./contact.html">Contact</a></li>
-                <?php endif; ?>
-            </ul>
-        </nav>
-
+         
         <div class="humberger__menu__contact">
             <ul>
                 <li><i class="fa fa-envelope"></i> info@FreshFare.aurats.com</li>
@@ -126,21 +134,27 @@ if (isset($_SESSION['user'])) {
                     <nav class="header__menu">
                         <ul>
                             <?php if ($category === 'sup_admin'): ?>
-                                <li><a href="./dashboard">Dashboard</a></li>
+                                <li><a href="./adm_dashboard">Dashboard</a></li>
                                 <li><a href="./view_companies">View Registered Companies</a></li>
                                 <li><a href="./enroll_company">Enroll New Company</a></li>
+                                <li><a href="./order_list">View Orders List</a></li>
                             <?php elseif ($category === 'company'): ?>
-                                <li><a href="./dashboard">Dashboard</a></li>
+                                <li><a href="./adm_dashboard">Dashboard</a></li>
                                 <li><a href="./view_items">View Listed Items</a></li>
+                            <?php elseif ($category === 'delivery_agent'):  ?>
+                                <li><a href="./deli_dashboard">Home</a></li>
+                                <li><a href="./view_undeliveredOrders">View Undelivered /Delivered Orders</a></li>
                             <?php else: ?>
                                 <li><a href="./dashboard">Home</a></li>
                                 <li><a href="./shoping-cart">View Cart</a></li>
                                 <li><a href="./contact.html">Contact</a></li>
                             <?php endif; ?>
+                            
                         </ul>
                     </nav>
+                     
                 </div>
-
+               
                 <div class="col-lg-3">
                     <div class="header__cart">
                         <ul>
@@ -150,11 +164,23 @@ if (isset($_SESSION['user'])) {
                     </div>
                 </div>
             </div>
+           
             <div class="humberger__open">
                 <i class="fa fa-bars"></i>
             </div>
         </div>
+         
     </header>
+     <div class="overlay" id="alertBox">
+        <div class="popup">
+            <div class="popup-header">
+            <div id="iconBox" ></div>
+            <h3>Notification</h3>
+            </div>
+            <p id="alertMessage">Your item has been added successfully!</p>
+            <button onclick="closePopup()">OK</button>
+        </div>
+    </div>
 <!-- Header End -->
 
 <?php 

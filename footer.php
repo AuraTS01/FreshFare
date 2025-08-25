@@ -21,7 +21,7 @@
                         </ul>
                     </div>
                 </div>
-                <!-- <div class="col-lg-4 col-md-6 col-sm-6 offset-lg-1">
+                <div class="col-lg-4 col-md-6 col-sm-6 offset-lg-1">
                     <div class="footer__widget">
                         <h6>Useful Links</h6>
                         <ul>
@@ -29,7 +29,7 @@
                             <li><a href="#">About Our Shop</a></li>
                             <li><a href="#">Secure Shopping</a></li>
                             <li><a href="#">Delivery infomation</a></li>
-                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="javascript:void(0)" id="openModal">Privacy Policy</a></li>
                             <li><a href="#">Our Sitemap</a></li>
                         </ul>
                         <ul>
@@ -40,6 +40,74 @@
                             <li><a href="#">Innovation</a></li>
                             <li><a href="#">Testimonials</a></li>
                         </ul>
+                    </div>
+                </div>
+
+               <div class="modal fade" id="privacyModal" tabindex="-1">
+                    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">FreshFare Privacy Policy</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-content">
+                        <span class="close" id="closeModal">&times;</span>
+                        
+                        <p><strong>Effective Date:</strong> [Insert Date] <br>
+                            <strong>Last Updated:</strong> [Insert Date]</p>
+
+                        <p>FreshFare (“Company,” “we,” “our,” or “us”) is committed to protecting the privacy of our customers.
+                            This Privacy Policy explains how we collect, use, share, and safeguard your personal information when you use our website, mobile application, or services.</p>
+
+                        <h3>1. Information We Collect</h3>
+                        <ul>
+                            <li><strong>Personal Information:</strong> Name, email, phone, address, payment details (processed securely).</li>
+                            <li><strong>Order & Transaction Data:</strong> Purchases (meat, fruits, vegetables), order history.</li>
+                            <li><strong>Technical Data:</strong> IP address, device type, browsing behavior.</li>
+                        </ul>
+
+                        <h3>2. Purpose of Processing</h3>
+                        <p>We use your information to process orders, improve services, communicate updates, ensure compliance, and prevent fraud.</p>
+
+                        <h3>3. Legal Basis</h3>
+                        <p>We process data based on consent, contractual necessity, legal compliance, and legitimate interests.</p>
+
+                        <h3>4. Sharing of Information</h3>
+                        <p>We never sell data. We may share it with payment gateways, delivery partners, or regulators if required.</p>
+
+                        <h3>5. Data Protection</h3>
+                        <p>We use encryption, secure servers, and restricted access to safeguard your information.</p>
+
+                        <h3>6. Data Retention</h3>
+                        <p>Data is kept only as long as needed for orders, compliance, and legal purposes.</p>
+
+                        <h3>7. Your Rights</h3>
+                        <ul>
+                            <li>Access and correct your data.</li>
+                            <li>Request deletion.</li>
+                            <li>Withdraw consent.</li>
+                            <li>Nominate someone to act on your behalf.</li>
+                        </ul>
+
+                        <h3>8. Cookies & Tracking</h3>
+                        <p>We use cookies to improve user experience and analyze usage. You may disable cookies in your browser.</p>
+
+                        <h3>9. Children’s Privacy</h3>
+                        <p>Our services are for users 18+; we do not knowingly collect children’s data.</p>
+
+                        <h3>10. Food Safety & Order Information</h3>
+                        <p>We comply with <strong>FSSAI standards</strong> for handling meat, vegetables, and fruits. 
+                            Order data is collected only for fulfilling purchases and regulatory compliance.  
+                            FSSAI License Number: [Insert License Number]</p>
+
+                        <h3>11. Grievance Redressal</h3>
+                        <p><strong>Grievance Officer:</strong><br>
+                            📧 Email: [Insert Email]<br>
+                            📍 Address: [Insert Business Address]<br>
+                            📞 Phone: [Insert Phone Number]</p>
+
+                        <h3>12. Updates</h3>
+                        <p>We may update this Privacy Policy from time to time. Changes will be posted here with updated dates.</p>
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-12">
@@ -57,8 +125,10 @@
                             <a href="#"><i class="fa fa-pinterest"></i></a>
                         </div>
                     </div>
-                </div> -->
+                </div>
             </div>
+
+            
             <div class="row">
                 <div class="col-lg-12">
                     <div class="footer__copyright">
@@ -70,6 +140,8 @@
                 </div>
             </div>
         </div>
+
+        
     </footer>
     <!-- Footer Section End -->
 
@@ -84,15 +156,31 @@
     <script src="js/main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>   
     
+    <script>
+        const modal = document.getElementById("privacyModal"); // modal
+        const link = document.getElementById("openModal");     // link
+        const closeBtn = document.getElementById("closeModal");
+
+        link.addEventListener('click', () => modal.style.display = "block");
+        closeBtn.addEventListener('click', () => modal.style.display = "none");
+        window.addEventListener('click', e => {
+        if(e.target === modal) modal.style.display = "none";
+        });
+    </script>
 
    
     <script>
-        function addToCart(button, name, price) {
+        function addToCart(button, name, price, companyId) {
             const cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const existingItem = cart.find(item => item.name === name);
+            const existingItem = cart.find(item => item.name === name && item.company_id === companyId);
 
             if (!existingItem) {
-                cart.push({ name, price, quantity: 1 }); // default quantity is 1
+                cart.push({ 
+                    name, 
+                    price, 
+                    quantity: 1, 
+                    company_id: companyId 
+                }); // ✅ include company_id
                 localStorage.setItem("cart", JSON.stringify(cart));
                 updateCartCount();
 
@@ -100,9 +188,30 @@
                 button.innerHTML = `<i class="fa fa-shopping-cart"></i> View Cart`;
                 button.classList.remove("btn-success");
                 button.classList.add("btn-success");
+                showPopup("success", `${name} has been added to your cart successfully!`);
             } else {
                 window.location.href = "shoping-cart";
             }
+        }
+        function showPopup(type, message) {
+            const alertBox = document.getElementById("alertBox");
+            const msgBox = document.getElementById("alertMessage");
+            const iconBox = document.getElementById("iconBox");
+
+            msgBox.innerText = message;
+
+            if (type === "success") {
+                iconBox.innerHTML = '<div class="icon success"></div>';
+            } else if (type === "error") {
+                iconBox.innerHTML = '<div class="icon error"></div>';
+            }
+
+            alertBox.classList.add("active");
+        }
+
+        // Close popup
+        function closePopup() {
+            document.getElementById("alertBox").classList.remove("active");
         }
 
 
@@ -525,12 +634,39 @@
             document.getElementById("password").value = "Password";
         }
     </script>
-  
+    <script>
+      // Insert PHP message into popup
+      document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("alertMessage").innerText = 
+          "<?php echo htmlspecialchars($msg, ENT_QUOTES); ?>";
+        document.getElementById("alertBox").classList.add("active");
+      });
+      function closePopup() {
+        document.getElementById("alertBox").classList.remove("active");
+      }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#ordersTable').DataTable({
+                "pageLength": 10,
+                "order": [[ 6, "desc" ]],
+                "columnDefs": [
+                    { "orderable": false, "targets": [4] } // disable sorting for Items column
+                ],
+                "dom": 
+                "<'row'<'col-sm-6'l><'col-sm-6 d-flex justify-content-end align-items-center'f<'ms-3 delivered-total'>>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-6'i><'col-sm-6'p>>",
+                "language": {
+                    "search": "Search Orders:"
+                }
+            });
 
-
-
-
-
+        });
+    </script>
 
 </body>
 
