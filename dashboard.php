@@ -337,9 +337,9 @@ if (isset($_SESSION['user']))
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
                                         <div class="modal-body">
-                                            
+                                            <p>Note: You can Change / Modify the Quantity in Cart / View Cart Page</p>
                                             <div class="row g-3">
-                                               
+                                                
                                                 <?php foreach ($uniqueItems as $product):
                                                     $productName = htmlspecialchars($product['name']);
                                                     $price = (float)$product['price'];
@@ -359,6 +359,7 @@ if (isset($_SESSION['user']))
                                                             <div class="featured__item__pic set-bg"
                                                                 data-setbg="<?php echo $image; ?>"
                                                                 style="background-size: cover; background-position: center;">
+                                                               
                                                                 <ul class="featured__item__pic__hover">
                                                                     <li>
                                                                         <button class="btn btn-success btn-sm"
@@ -373,7 +374,7 @@ if (isset($_SESSION['user']))
                                                                 <h6 class="mt-2"><a href="#"><?php echo $productName; ?></a></h6>
                                                                 <h5>
                                                                     <?php if ($price > 0): ?>
-                                                                        ₹<?php echo number_format($price, 2); ?>
+                                                                        ₹<?php echo number_format($price, 2); ?> / KG
                                                                     <?php else: ?>
                                                                         <span class="text-muted">Price not set</span>
                                                                     <?php endif; ?>

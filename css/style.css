@@ -3866,3 +3866,76 @@ ol {
     padding: 5px 12px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+/* Clean & normal dropdown */
+.form-select-sm {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    width: 80px;
+    transition: all 0.25s ease-in-out;
+}
+
+/* On hover */
+.form-select-sm:hover {
+    background-color: #f9f9f9;
+    border-color: #999;
+}
+
+/* On focus */
+.form-select-sm:focus {
+    outline: none;
+    border-color: #666;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+}
+
+.cart-select {
+  width: 80px;            /* fixed width */
+  min-width: 70px;        /* prevent shrinking */
+  max-width: 100px;       /* prevent overflow */
+  padding: 4px 6px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  appearance: auto;       /* keep native dropdown look */
+  position: relative;     /* fix floating in responsive */
+  z-index: 1;
+}
+
+
+.quantity-group {
+    display: inline-flex;
+    align-items: center;
+}
+
+.quantity-group .qty-btn {
+    border-radius: 0;
+    width: 36px;
+    height: 36px;
+    line-height: 1;
+    padding: 0;
+}
+
+.quantity-group .qty-btn:first-child {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.quantity-group .qty-btn:last-child {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.quantity-group .qty-input {
+    width: 60px;
+    text-align: center;
+    border-left: none;
+    border-right: none;
+    height: 36px;
+}

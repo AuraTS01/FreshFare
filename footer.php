@@ -279,16 +279,18 @@
             </td>
             <td class="shoping__cart__price">₹${pricePerUnit.toFixed(2)} /kg</td>
             <td class="shoping__cart__step text-center">
-                <select onchange="setIncrement(${index}, this.value)" class="form-select form-select-sm" id="inc-${index}" style="width: 80px;">
-                <option value="1" ${item.increment === 1 ? 'selected' : ''}>1 kg</option>
-                <option value="0.5" ${item.increment === 0.5 ? 'selected' : ''}>0.5 kg</option>
+                <select onchange="setIncrement(${index}, this.value)" 
+                        class="form-select form-select-sm cart-select" 
+                        id="inc-${index}">
+                    <option value="1" ${item.increment === 1 ? 'selected' : ''}>1 kg</option>
+                    <option value="0.5" ${item.increment === 0.5 ? 'selected' : ''}>0.5 kg</option>
                 </select>
             </td>
             <td class="shoping__cart__quantity text-center">
                 <div class="d-flex justify-content-center align-items-center gap-2">
-                <button onclick="updateQuantity(${index}, -1)" class="btn btn-outline-secondary btn-sm">-</button>
-                <input type="text" value="${quantity.toFixed(1)}" id="qty-${index}" class="form-control form-control-sm text-center" style="width: 60px;" readonly>
-                <button onclick="updateQuantity(${index}, 1)" class="btn btn-outline-secondary btn-sm">+</button>
+                    <button onclick="updateQuantity(${index}, -1)" class="btn btn-outline-secondary btn-sm">-</button>
+                    <input type="text" value="${quantity.toFixed(1)}" id="qty-${index}" class="form-control form-control-sm text-center" style="width: 60px;" readonly>
+                    <button onclick="updateQuantity(${index}, 1)" class="btn btn-outline-secondary btn-sm">+</button>
                 </div>
             </td>
             
