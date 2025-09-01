@@ -158,6 +158,29 @@ ADD COLUMN company_id INT NOT NULL AFTER order_id;
 
 ALTER TABLE order_items ADD COLUMN pickup_status ENUM('pending','picked') DEFAULT 'pending';
 
+
+
+
+ALTER TABLE item_price ADD COLUMN kadai_price DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE item_price ADD COLUMN mutton_boti_price DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE item_price ADD COLUMN mutton_Liver_price DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE item_price ADD COLUMN beef_price DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE item_price ADD COLUMN beef_liver_price DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE item_price ADD COLUMN beef_boti_price DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE item_price ADD COLUMN duck_price DECIMAL(10,2) DEFAULT 0;
+
+
+
+
+ALTER TABLE orders ADD COLUMN company_id INT AFTER customer_id;
+
+ALTER TABLE order_items MODIFY pickup_status VARCHAR(10);
+ALTER TABLE orders MODIFY status VARCHAR(10);
+ALTER TABLE orders 
+MODIFY status ENUM('pending','acknowledged','dispatched','OPOD','delivered', 'partially_picked','picked') NOT NULL;
+
+
+
 -- ALTER TABLE order_items 
 -- ADD CONSTRAINT fk_orderitems_company 
 -- FOREIGN KEY (company_id) REFERENCES company_registration(company_id) 

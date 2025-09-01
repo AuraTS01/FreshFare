@@ -121,7 +121,7 @@ if(isset($_POST['login'])){
                         $_SESSION['zipCode'] = $row['zipCode'];
                         //echo $_SESSION['last_login_timestamp'];
                         
-                        header("Location:./adm_dashboard");
+                        header("Location:./com_dashboard");
 
                     }else if ($row['category'] === 'customer' ){
                         $_SESSION['username'] = $row['username'];
@@ -186,29 +186,45 @@ if(isset($_POST['billingAddressSave'])){
     $zipCode = $_POST['zipCode'];
     $contactNumber = $_POST['contactNumber'];
     $email = $_POST['email'];
-  
 
-   
-    if($Address_2!=""){
-        $check_sql = "UPDATE fresh_fare_signup SET `country` = '$country', `Address_1` = '$Address_1', `Address_2` = '$Address_2',`town` = '$town',`state` = '$state' ,`zipCode` = '$zipCode' WHERE `email` = '$email' AND `mob_num`='$contactNumber'";
-        
-        if(mysqli_query($login_db,$check_sql)){
-            header("Location:checkout?msg=Billing Address Updated");
+    // Define valid pincodes
+    $validPincodes = ['641104', '641301', '641305'];
+
+    // Check if ZIP code is valid
+    if(!in_array($zipCode, $validPincodes)){
+        // showAlert("Please choose a valid location Pincode. (We Serve only for Karamadai and Mettupalayam Location)");
+        header("Location:checkout?err=Please choose a valid location Pincode. (We Serve only for Karamadai and Mettupalayam Location");
+    } else {
+        // ZIP is valid, proceed to update
+        if($Address_2 != ""){
+            $check_sql = "UPDATE fresh_fare_signup SET 
+                `country` = '$country',
+                `Address_1` = '$Address_1',
+                `Address_2` = '$Address_2',
+                `town` = '$town',
+                `state` = '$state',
+                `zipCode` = '$zipCode'
+                WHERE `email` = '$email' AND `mob_num`='$contactNumber'";
+        } else {
+            $check_sql = "UPDATE fresh_fare_signup SET 
+                `country` = '$country',
+                `Address_1` = '$Address_1',
+                `Address_2` = '',
+                `town` = '$town',
+                `state` = '$state',
+                `zipCode` = '$zipCode'
+                WHERE `email` = '$email' AND `mob_num`='$contactNumber'";
         }
-        
-        
-    }else if ($Address_2 == ""){
 
-        $check_sql = "UPDATE fresh_fare_signup SET `country` = '$country', `Address_1` = '$Address_1', `Address_2` = '',`town` = '$town',`state` = '$state',`zipCode` = '$zipCode' WHERE `email` = '$email' AND `mob_num`='$contactNumber'";
-       
         if(mysqli_query($login_db,$check_sql)){
             header("Location:checkout?msg=Billing Address Updated");
+            exit();
         }
     }
 }
 
 // === SAVE ORDER: from frontend JavaScript fetch request ===
-// === SAVE ORDER: from frontend JavaScript fetch request ===
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] === 'save_order') {
     header("Content-Type: application/json");
 
@@ -222,6 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
     $data = json_decode(file_get_contents("php://input"), true);
     $payment_mode = $data['payment_mode'] ?? 'unknown';
     $cart = $data['cart'] ?? [];
+    $status = 'pending';
 
     if (empty($cart)) {
         echo json_encode(['status' => 'error', 'message' => 'Cart is empty']);
@@ -251,15 +268,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
     $customer_id = $res->fetch_assoc()['id'];
     $stmt->close();
 
-    // ✅ Insert order
+    // ✅ Get company_id from the first cart item
+    $firstCompanyId = isset($cart[0]['company_id']) ? (int)$cart[0]['company_id'] : 0;
+    if ($firstCompanyId === 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Missing company_id for order']);
+        exit;
+    }
+
+    // ✅ Insert order (with company_id)
     $order_code = "ORD" . rand(100000, 999999);
     $order_date = date("Y-m-d H:i:s");
 
     $stmt = $login_db->prepare("
-        INSERT INTO orders (customer_id, order_code, order_date, payment_mode, total_price)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO orders (customer_id, company_id, order_code, order_date, payment_mode, total_price, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     ");
-    $stmt->bind_param("isssd", $customer_id, $order_code, $order_date, $payment_mode, $total);
+    $stmt->bind_param("iisssds", $customer_id, $firstCompanyId, $order_code, $order_date, $payment_mode, $total,$status);
 
     try {
         $stmt->execute();
@@ -277,6 +301,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
         $price      = isset($item['price']) ? (float)$item['price'] : 0;
         $company_id = isset($item['company_id']) ? (int)$item['company_id'] : 0;
         $unit       = 'Kg'; // default unit
+        $status     = 'pending';
 
         if ($company_id === 0) {
             echo json_encode(['status' => 'error', 'message' => 'Missing company_id for item', 'item' => $item]);
@@ -284,10 +309,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
         }
 
         $stmt = $login_db->prepare("
-            INSERT INTO order_items (order_id, item_name, quantity, unit, price, company_id)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO order_items (order_id, item_name, quantity, unit, price, company_id, pickup_status)
+            VALUES (?, ?, ?, ?, ?, ?,?)
         ");
-        $stmt->bind_param("isdsdi", $order_db_id, $item_name, $quantity, $unit, $price, $company_id);
+        $stmt->bind_param("isdsdis", $order_db_id, $item_name, $quantity, $unit, $price, $company_id, $status);
 
         try {
             $stmt->execute();
@@ -306,6 +331,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
     echo json_encode(['status' => 'success', 'order_id' => $order_code]);
     exit;
 }
+
+
 
 
 
@@ -383,41 +410,285 @@ if (isset($_POST['order_id']) && isset($_POST['company_id'])) {
     $order_id = intval($_POST['order_id']);
     $company_id = intval($_POST['company_id']);
 
-    // Update all items for this company in this order to 'picked'
+    // ✅ Update all items for this company in this order to 'picked'
     $update = $login_db->prepare("UPDATE order_items SET pickup_status = 'picked' WHERE order_id = ? AND company_id = ?");
     $update->bind_param("ii", $order_id, $company_id);
     $update->execute();
 
-    // Check if all items in the order are picked
+    // ✅ Check if all items in the order are picked
     $check = $login_db->prepare("SELECT COUNT(*) as pending FROM order_items WHERE order_id = ? AND pickup_status = 'pending'");
     $check->bind_param("i", $order_id);
     $check->execute();
     $result = $check->get_result()->fetch_assoc();
 
     if ($result['pending'] == 0) {
-        // All items picked → update order status
-        $login_db->query("UPDATE orders SET status = 'Order Picked Up' WHERE id = $order_id");
+        // All items picked → set ENUM 'picked'
+        $status = 'picked';
     } else {
-        // Some items still pending → partial status
-        $login_db->query("UPDATE orders SET status = 'Partially Picked' WHERE id = $order_id");
+        // Some items still pending → set ENUM 'partially_picked'
+        $status = 'partially_picked';
     }
 
-    // Redirect back to the page with a success message
+    // ✅ Update the order status safely with prepared statement
+    $updateOrder = $login_db->prepare("UPDATE orders SET status = ? WHERE id = ?");
+    $updateOrder->bind_param("si", $status, $order_id);
+    $updateOrder->execute();
+
+    // Redirect with message
     header("Location: ./view_undeliveredOrders?msg=Company items marked as picked");
-    
-} 
+    exit();
+}
+
 
 if (isset($_POST['deliver_order_id'])) {
     $deliverOrderId = (int) $_POST['deliver_order_id'];
-    $upd = $login_db->query("UPDATE orders SET status='delivered' WHERE id={$deliverOrderId}");
-    if ($upd) {
-        header("Location: view_undeliveredOrders?msg=Order marked as delivered");
-        exit;
+
+    // ✅ Update order status
+    $updOrder = $login_db->prepare("UPDATE orders SET status = 'delivered' WHERE id = ?");
+    $updOrder->bind_param("i", $deliverOrderId);
+    $updOrder->execute();
+
+    // ✅ Update all items of that order as delivered
+    $updItems = $login_db->prepare("UPDATE order_items SET pickup_status = 'delivered' WHERE order_id = ?");
+    $updItems->bind_param("i", $deliverOrderId);
+    $updItems->execute();
+
+    if ($updOrder->affected_rows > 0) {
+        header("Location: view_undeliveredOrders?msg=Order marked as delivered with all items");
     } else {
         header("Location: view_undeliveredOrders?err=Failed to update order");
-        exit;
     }
 }
+
+
+
+// ✅ Handle POST (when button clicked)
+if (isset($_POST['update_order']) && isset($_POST['order_id']) && isset($_POST['status'])) {
+    $oid = (int)$_POST['order_id'];
+    $status = $login_db->real_escape_string($_POST['status']);
+
+    // ✅ Start transaction to ensure both succeed together
+    $login_db->begin_transaction();
+
+    try {
+        // Update order
+        $sql1 = "UPDATE orders SET status='$status' WHERE id=$oid";
+        $ok1 = $login_db->query($sql1);
+
+        // Update all items in that order
+        $sql2 = "UPDATE order_items SET pickup_status='$status' WHERE order_id=$oid";
+        $ok2 = $login_db->query($sql2);
+
+        if ($ok1 && $ok2) {
+            $login_db->commit();
+            echo json_encode([
+                'success' => true, 
+                'message' => "Order #$oid and its items updated to $status"
+            ]);
+        } else {
+            $login_db->rollback();
+            echo json_encode([
+                'success' => false, 
+                'message' => "Failed to update order or items"
+            ]);
+        }
+    } catch (Exception $e) {
+        $login_db->rollback();
+        echo json_encode([
+            'success' => false, 
+            'message' => "Error: " . $e->getMessage()
+        ]);
+    }
+   
+}
+
+
+if (isset($_POST['fetch_orders'])) {
+    $sql = "
+        SELECT 
+            o.id AS order_id,
+            o.order_code,
+            o.order_date,
+            o.payment_mode,
+            o.status,
+            c.username AS customer_name,
+            c.mob_num,
+            oi.id AS order_item_id,
+            oi.item_name,
+            oi.quantity,
+            oi.unit,
+            oi.pickup_status,
+            CASE 
+                WHEN oi.item_name = 'chicken_with_skin' THEN COALESCE(ip.chicken_with_skin_price,0)
+                WHEN oi.item_name = 'chicken_without_skin' THEN COALESCE(ip.chicken_without_skin_price,0)
+                WHEN oi.item_name = 'prawn' THEN COALESCE(ip.prawn_price,0)
+                WHEN oi.item_name = 'mutton' THEN COALESCE(ip.mutton_price,0)
+                WHEN oi.item_name = 'fish' THEN COALESCE(ip.fish_price,0)
+                WHEN oi.item_name = 'kadai' THEN COALESCE(ip.kadai_price,0)
+                WHEN oi.item_name = 'mutton_boti' THEN COALESCE(ip.mutton_boti_price,0)
+                WHEN oi.item_name = 'mutton_liver' THEN COALESCE(ip.mutton_Liver_price,0)
+                WHEN oi.item_name = 'beef' THEN COALESCE(ip.beef_price,0)
+                WHEN oi.item_name = 'beef_liver' THEN COALESCE(ip.beef_liver_price,0)
+                WHEN oi.item_name = 'beef_boti' THEN COALESCE(ip.beef_boti_price,0)
+                WHEN oi.item_name = 'duck' THEN COALESCE(ip.duck_price,0)
+                ELSE 0
+            END AS base_price
+
+        FROM orders o
+        JOIN fresh_fare_signup c 
+            ON c.id = o.customer_id
+        JOIN order_items oi 
+            ON oi.order_id = o.id
+        LEFT JOIN company_registration cr 
+            ON cr.signup_id = c.id             -- ✅ don’t block if no company row
+        LEFT JOIN item_price ip ON ip.company_id = oi.company_id
+
+        WHERE o.status IN ('pending', 'acknowledged') 
+        ORDER BY o.order_date DESC, o.id DESC
+    ";
+
+
+        $res = $login_db->query($sql);
+        $orders = [];
+
+        if ($res && $res->num_rows) {
+            while ($r = $res->fetch_assoc()) {
+                $oid = (int)$r['order_id'];
+
+                if (!isset($orders[$oid])) {
+                    $orders[$oid] = [
+                        'order_id' => $oid,
+                        'order_code' => $r['order_code'],
+                        'order_date' => $r['order_date'],
+                        'payment_mode' => $r['payment_mode'],
+                        'status' => $r['status'],
+                        'customer_name' => $r['customer_name'],
+                        'mob_num' => $r['mob_num'],
+                        'items' => [],
+                        'calculated_total' => 0,
+                    ];
+                }
+
+                // ✅ Add item with base price
+                $orders[$oid]['items'][] = [
+                    'order_item_id' => (int)$r['order_item_id'],
+                    'item_name' => $r['item_name'],
+                    'quantity' => (float)$r['quantity'],
+                    'unit' => $r['unit'],
+                    'price' => (float)$r['base_price'],
+                    'pickup_status' => $r['pickup_status'],
+                ];
+
+                // ✅ Add to recalculated total
+                $orders[$oid]['calculated_total'] += 
+                    (isset($r['base_price']) && is_numeric($r['base_price']) ? (float)$r['base_price'] : 0) 
+                    * 
+                    (isset($r['quantity']) && is_numeric($r['quantity']) ? (float)$r['quantity'] : 0);
+
+            }
+        }
+
+    echo json_encode(array_values($orders));
+    // exit;
+}
+
+if (isset($_POST['fetch_dispatched'])) {
+    $sql = "
+        SELECT 
+            o.id AS order_id,
+            o.order_code,
+            o.order_date,
+            o.payment_mode,
+            o.status,
+            o.total_price,               -- added total_price
+            c.username AS customer_name,
+            c.mob_num,
+            oi.id AS order_item_id,
+            oi.item_name,
+            oi.quantity,
+            oi.unit,
+            oi.pickup_status,
+            CASE 
+                WHEN oi.item_name = 'chicken_with_skin' THEN COALESCE(ip.chicken_with_skin_price,0)
+                WHEN oi.item_name = 'chicken_without_skin' THEN COALESCE(ip.chicken_without_skin_price,0)
+                WHEN oi.item_name = 'prawn' THEN COALESCE(ip.prawn_price,0)
+                WHEN oi.item_name = 'mutton' THEN COALESCE(ip.mutton_price,0)
+                WHEN oi.item_name = 'fish' THEN COALESCE(ip.fish_price,0)
+                WHEN oi.item_name = 'kadai' THEN COALESCE(ip.kadai_price,0)
+                WHEN oi.item_name = 'mutton_boti' THEN COALESCE(ip.mutton_boti_price,0)
+                WHEN oi.item_name = 'mutton_liver' THEN COALESCE(ip.mutton_Liver_price,0)
+                WHEN oi.item_name = 'beef' THEN COALESCE(ip.beef_price,0)
+                WHEN oi.item_name = 'beef_liver' THEN COALESCE(ip.beef_liver_price,0)
+                WHEN oi.item_name = 'beef_boti' THEN COALESCE(ip.beef_boti_price,0)
+                WHEN oi.item_name = 'duck' THEN COALESCE(ip.duck_price,0)
+                ELSE 0
+            END AS base_price
+        FROM orders o
+        JOIN fresh_fare_signup c 
+            ON c.id = o.customer_id
+        JOIN order_items oi 
+            ON oi.order_id = o.id
+        LEFT JOIN item_price ip 
+            ON ip.company_id = oi.company_id
+        WHERE o.status = 'dispatched'
+        ORDER BY o.order_date DESC, o.id DESC
+
+    ";
+    $res = $login_db->query($sql);
+
+    $orders = [];
+    if ($res && $res->num_rows) {
+        while ($r = $res->fetch_assoc()) {
+            $oid = (int)$r['order_id'];
+
+            if (!isset($orders[$oid])) {
+                $orders[$oid] = [
+                    'order_id'      => $oid,
+                    'order_code'    => $r['order_code'],
+                    'order_date'    => $r['order_date'],
+                    'payment_mode'  => $r['payment_mode'],
+                    'total_price'   => (float)$r['total_price'],
+                    'status'        => $r['status'],
+                    'customer_name' => $r['customer_name'],
+                    'mob_num'       => $r['mob_num'],
+                    'items'         => [],
+                ];
+            }
+
+            $orders[$oid]['items'][] = [
+                'order_item_id' => (int)$r['order_item_id'],
+                'item_name'     => $r['item_name'],
+                'quantity'      => (float)$r['quantity'],
+                'unit'          => $r['unit'],
+                'price'         => (float)$r['base_price'],   // use base_price
+                'pickup_status' => $r['pickup_status'],       // use pickup_status
+            ];
+
+        }
+    }
+
+    echo json_encode(array_values($orders));
+    // exit;
+}
+
+if(isset($_POST['updateCategory'])){
+    $email = $_POST['email'];
+    $username = $_POST['username'];
+    $mob_num = $_POST['mob_num'];
+    $category = $_POST['category'];
+
+    $update_sql = "UPDATE fresh_fare_signup 
+                   SET username='$username', mob_num='$mob_num', category='$category' 
+                   WHERE email='$email'";
+
+    if(mysqli_query($login_db, $update_sql)){
+        header("Location: ./view_companies?msg=User Information SuccessFully Updated for $email");
+    } else {
+        
+        header("Location: ./view_companies?err=Error updating user info for $email");
+    }
+}
+
 
 ?>
 

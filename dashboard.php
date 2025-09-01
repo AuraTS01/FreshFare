@@ -71,9 +71,17 @@ if (isset($_SESSION['user']))
                         </div>
                         <ul>
                             <li><a href="#targetSection">Chicken</a></li>
-                            <li><a href="#targetSection">Mutton</a></li>
                             <li><a href="#targetSection">Fish</a></li>
                             <li><a href="#targetSection">Prawns</a></li>
+                            <li><a href="#targetSection">Mutton</a></li>
+                            <li><a href="#targetSection">Mutton - Boti</a></li>
+                            <li><a href="#targetSection">Mutton - Liver</a></li>
+                            <li><a href="#targetSection">Beef</a></li>
+                            <li><a href="#targetSection">Beef - Liver</a></li>
+                            <li><a href="#targetSection">Beef - Boti</a></li>
+                            <li><a href="#targetSection">Quail</a></li>
+                            <li><a href="#targetSection">Duck</a></li>
+                            
                             <!-- <li><a href="#">Ocean Foods</a></li>
                             <li><a href="#">Butter & Eggs</a></li>
                             <li><a href="#">Fastfood</a></li>
@@ -172,88 +180,77 @@ if (isset($_SESSION['user']))
         // Helpers
         // -----------------------------------------------
 
+
+        // Function to adjust price based on base price
+        function getAdjustedPrice(float $basePrice): float {
+            if ($basePrice <= 100) {
+                return $basePrice + 10;
+            } elseif ($basePrice <= 249) {
+                return $basePrice + 25;
+            } elseif ($basePrice <= 350) {
+                return $basePrice + 30;
+            } else { // > 350
+                return $basePrice + 40;
+            }
+        }
         // Split items by commas but ignore commas inside parentheses.
         function splitTopLevelItems(string $s): array {
             $items = [];
             $buf = '';
             $depth = 0;
             $len = strlen($s);
-
             for ($i = 0; $i < $len; $i++) {
                 $ch = $s[$i];
-                if ($ch === '(') {
-                    $depth++;
-                    $buf .= $ch;
-                } elseif ($ch === ')') {
-                    if ($depth > 0) $depth--;
-                    $buf .= $ch;
-                } elseif ($ch === ',' && $depth === 0) {
-                    $trim = trim($buf);
-                    if ($trim !== '') $items[] = $trim;
-                    $buf = '';
-                } else {
-                    $buf .= $ch;
-                }
+                if ($ch === '(') { $depth++; $buf .= $ch; }
+                elseif ($ch === ')') { if ($depth>0) $depth--; $buf .= $ch; }
+                elseif ($ch === ',' && $depth===0) { $items[] = trim($buf); $buf=''; }
+                else { $buf .= $ch; }
             }
-            $trim = trim($buf);
-            if ($trim !== '') $items[] = $trim;
-
+            if(trim($buf) !== '') $items[] = trim($buf);
             return $items;
         }
 
         // Expand "Base(Var1, Var2)" => ["Base Var1", "Base Var2"].
         // If no parentheses, return the item as-is.
         function expandItem(string $item): array {
-            // Match: everything up to "(", then inside ")"
             if (preg_match('/^([^(]+)\(([^)]*)\)$/', $item, $m)) {
-                $base = trim(preg_replace('/\s+/', ' ', $m[1]));       // e.g., "Chicken"
-                $inside = $m[2];                                       // e.g., "With Skin, Without Skin"
-                $parts = array_map('trim', explode(',', $inside));
+                $base = trim($m[1]);
+                $parts = array_map('trim', explode(',', $m[2]));
                 $out = [];
                 foreach ($parts as $p) {
-                    if ($p !== '') {
-                        $name = $base . ' ' . $p;
-                        $name = trim(preg_replace('/\s+/', ' ', $name));
-                        $out[] = $name;
-                    }
+                    $out[] = $base . ' ' . $p;
                 }
                 return $out;
             }
-            // No variants
-            $clean = trim(preg_replace('/\s+/', ' ', $item));
-            return [$clean];
+            return [trim($item)];
         }
 
         // Map a normalized product name to a price column from $row.
         function mapPrice(string $name, array $row): float {
             $n = strtolower($name);
-            if (strpos($n, 'chicken with skin') !== false) {
-                return (float)$row['chicken_with_skin_price'];
-            }
-            if (strpos($n, 'chicken without skin') !== false) {
-                return (float)$row['chicken_without_skin_price'];
-            }
-            if (strpos($n, 'mutton') !== false) {
-                return (float)$row['mutton_price'];
-            }
-            if (strpos($n, 'fish') !== false) {
-                return (float)$row['fish_price'];
-            }
-            if (strpos($n, 'prawn') !== false) {
-                return (float)$row['prawn_price'];
-            }
-            if (strpos($n, 'kadai') !== false) {
-                return (float)$row['kadai_price'];
-            }
+            if (strpos($n, 'chicken with skin') !== false) return (float)$row['chicken_with_skin_price'];
+            if (strpos($n, 'chicken without skin') !== false) return (float)$row['chicken_without_skin_price'];
+            if (strpos($n, 'mutton') !== false && strpos($n, 'boti') !== false) return (float)$row['mutton_boti_price'];
+            if (strpos($n, 'mutton') !== false && strpos($n, 'liver') !== false) return (float)$row['mutton_liver_price'];
+            if (strpos($n, 'mutton') !== false) return (float)$row['mutton_price'];
+            if (strpos($n, 'fish') !== false) return (float)$row['fish_price'];
+            if (strpos($n, 'prawn') !== false) return (float)$row['prawn_price'];
+            if (strpos($n, 'kadai') !== false) return (float)$row['kadai_price'];
+            if (strpos($n, 'beef') !== false && strpos($n, 'boti') !== false) return (float)$row['beef_boti_price'];
+            if (strpos($n, 'beef') !== false && strpos($n, 'liver') !== false) return (float)$row['beef_liver_price'];
+            if (strpos($n, 'beef') !== false) return (float)$row['beef_price'];
+            if (strpos($n, 'duck') !== false) return (float)$row['duck_price'];
             return 0.0;
         }
+
 
         // -----------------------------------------------
         // Query (also select cr.logo which you use below)
         // -----------------------------------------------
         $sql = "SELECT cr.company_id, cr.company_name, cr.email, cr.selling_items,
                     ip.chicken_with_skin_price, ip.chicken_without_skin_price, 
-                    ip.prawn_price, ip.mutton_price, ip.fish_price, ip.kadai_price
+                    ip.prawn_price, ip.mutton_price, ip.fish_price, ip.kadai_price, ip.beef_price, ip.beef_boti_price, ip.beef_liver_price,
+                    ip.mutton_boti_price, ip.mutton_liver_price,ip.duck_price
                 FROM company_registration cr
                 JOIN item_price ip ON cr.company_id = ip.company_id";
         $result = mysqli_query($login_db, $sql);
@@ -275,7 +272,25 @@ if (isset($_SESSION['user']))
                                 $companyId   = $row['company_id'];
                                 $companyName = htmlspecialchars($row['company_name']);
                                 $address     = htmlspecialchars($row['email']);
-                                $logo        = !empty($row['logo']) ? "./uploads/company_logos/" . $row['logo'] : "img/featured/default_company.jpg";
+
+                                // Check if logo exists
+                                if (!empty($row['logo']) && file_exists("./uploads/company_logos/" . $row['logo'])) {
+                                    $logo_html = '<img src="./uploads/company_logos/' . htmlspecialchars($row['logo']) . '" alt="' . $companyName . '" class="company-logo">';
+                                } else {
+                                    // If no logo, show initials
+                                    $words = explode(' ', $companyName);
+                                    $initials = '';
+                                    
+                                    if(count($words) >= 2){
+                                        $initials = strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
+                                    } else {
+                                        // If single word, take first two letters
+                                        $initials = strtoupper(substr($words[0], 0, 2));
+                                    }
+                                    
+                                    $logo_html = '<div class="company-placeholder">' . $initials . '</div>';
+                                }
+
 
                                 // 1) Split top-level items safely
                                 $topLevelItems = splitTopLevelItems($row['selling_items']);
@@ -306,7 +321,14 @@ if (isset($_SESSION['user']))
                             <!-- Company Card -->
                             <div class="col-lg-3 col-md-4 col-sm-6 mix companies">
                                 <div class="featured__item">
-                                    <div class="featured__item__pic set-bg" data-setbg="<?php echo $logo; ?>">
+                                    <div class="featured__item__pic set-bg" >
+                                        <div class="company-item">
+                                            <?php echo $logo_html; ?>
+                                            <div class="company-info">
+                                                <h5><?php echo $companyName; ?></h5>
+                                                <p><?php echo $address; ?></p>
+                                            </div>
+                                        </div>
                                         <ul class="featured__item__pic__hover">
                                             <li>
                                                 <button class="btn btn-primary"
@@ -340,49 +362,54 @@ if (isset($_SESSION['user']))
                                             <p>Note: You can Change / Modify the Quantity in Cart / View Cart Page</p>
                                             <div class="row g-3">
                                                 
-                                                <?php foreach ($uniqueItems as $product):
+                                                <?php 
+                                                foreach ($uniqueItems as $product) {
                                                     $productName = htmlspecialchars($product['name']);
-                                                    $price = (float)$product['price'];
+                                                    $basePrice   = (float)$product['price'];
+
+                                                    // Check if price is set
+                                                    if ($basePrice <= 0) {
+                                                        $priceText = '<span class="text-muted">Price not set</span>';
+                                                        $disableBtn = 'disabled';
+                                                    } else {
+                                                        $price = getAdjustedPrice($basePrice);
+                                                        $priceText = '₹' . number_format($price, 2) . ' / KG';
+                                                        $disableBtn = '';
+                                                    }
 
                                                     // Image mapping
                                                     $image = "img/featured/default.jpg";
                                                     $ln = strtolower($productName);
-                                                    if (strpos($ln, "chicken with skin") !== false)   $image = "img/featured/chicken_flesh.jpg";
+                                                    if (strpos($ln, "chicken with skin") !== false) $image = "img/featured/chicken_flesh.jpg";
                                                     elseif (strpos($ln, "chicken without skin") !== false) $image = "img/featured/chicken_withoutSkin.jpg";
-                                                    elseif (strpos($ln, "mutton") !== false)         $image = "img/featured/mutton.jpg";
-                                                    elseif (strpos($ln, "fish") !== false)           $image = "img/featured/fish.jpeg";
-                                                    elseif (strpos($ln, "prawn") !== false)          $image = "img/featured/prawns.jpg";
-                                                    elseif (strpos($ln, "kadai") !== false)          $image = "img/featured/kadai.jpeg";
-                                                ?>
-                                                    <div class="col-12 col-sm-6 col-lg-4">
-                                                        <div class="featured__item h-100">
-                                                            <div class="featured__item__pic set-bg"
-                                                                data-setbg="<?php echo $image; ?>"
-                                                                style="background-size: cover; background-position: center;">
-                                                               
-                                                                <ul class="featured__item__pic__hover">
-                                                                    <li>
-                                                                        <button class="btn btn-success btn-sm"
-                                                                                onclick="addToCart(this, '<?php echo $productName; ?>', <?php echo $price; ?>, <?php echo $row['company_id']; ?>)">
-                                                                            <i class="fa fa-shopping-cart"></i> Add to Cart
-                                                                        </button>
-                                                                    </li>
-                                                                </ul>
+                                                    elseif (strpos($ln, "mutton boti") !== false) $image = "img/featured/mutton.jpg";
+                                                    elseif (strpos($ln, "mutton liver") !== false) $image = "img/featured/mutton.jpg";
+                                                    elseif (strpos($ln, "fish") !== false) $image = "img/featured/fish.jpeg";
+                                                    elseif (strpos($ln, "prawn") !== false) $image = "img/featured/prawns.jpg";
+                                                    elseif (strpos($ln, "kadai") !== false) $image = "img/featured/kadai.jpeg";
+                                                    elseif (strpos($ln, "beef boti") !== false) $image = "img/featured/beef_boti.jpg";
+                                                    elseif (strpos($ln, "beef liver") !== false) $image = "img/featured/beef_liver.jpg";
 
+                                                    echo '<div class="col-12 col-sm-6 col-lg-4">
+                                                            <div class="featured__item h-100">
+                                                                <div class="featured__item__pic set-bg" style="background-image:url(' . $image . '); background-size: cover; background-position: center;">
+                                                                    <ul class="featured__item__pic__hover">
+                                                                        <li>
+                                                                            <button class="btn btn-success btn-sm" ' . $disableBtn . '
+                                                                                onclick="addToCart(this, \'' . $productName . '\', ' . ($basePrice > 0 ? $price : 0) . ', ' . $row['company_id'] . ')">
+                                                                                <i class="fa fa-shopping-cart"></i> Add to Cart
+                                                                            </button>
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
+                                                                <div class="featured__item__text text-center">
+                                                                    <h6 class="mt-2"><a href="#">' . $productName . '</a></h6>
+                                                                    <h5>' . $priceText . '</h5>
+                                                                </div>
                                                             </div>
-                                                            <div class="featured__item__text text-center">
-                                                                <h6 class="mt-2"><a href="#"><?php echo $productName; ?></a></h6>
-                                                                <h5>
-                                                                    <?php if ($price > 0): ?>
-                                                                        ₹<?php echo number_format($price, 2); ?> / KG
-                                                                    <?php else: ?>
-                                                                        <span class="text-muted">Price not set</span>
-                                                                    <?php endif; ?>
-                                                                </h5>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                <?php endforeach; ?>
+                                                        </div>';
+                                                }
+?>
                                             </div>
                                         </div>
                                         <div class="modal-footer">

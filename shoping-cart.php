@@ -33,10 +33,17 @@ if (isset($_SESSION['user']))
                             <span>All Items</span>
                         </div>
                         <ul>
-                            <li><a href="./dashboard#targetSection">Chicken</a></li>
-                            <li><a href="./dashboard#targetSection">Mutton</a></li>
-                            <li><a href="./dashboard#targetSection">Fish</a></li>
-                            <li><a href="./dashboard#targetSection">Prawns</a></li>
+                            <li><a href="#targetSection">Chicken</a></li>
+                            <li><a href="#targetSection">Fish</a></li>
+                            <li><a href="#targetSection">Prawns</a></li>
+                            <li><a href="#targetSection">Mutton</a></li>
+                            <li><a href="#targetSection">Mutton - Boti</a></li>
+                            <li><a href="#targetSection">Mutton - Liver</a></li>
+                            <li><a href="#targetSection">Beef</a></li>
+                            <li><a href="#targetSection">Beef - Liver</a></li>
+                            <li><a href="#targetSection">Beef - Boti</a></li>
+                            <li><a href="#targetSection">Quail</a></li>
+                            <li><a href="#targetSection">Duck</a></li>
                             <!-- <li><a href="#">Ocean Foods</a></li>
                             <li><a href="#">Butter & Eggs</a></li>
                             <li><a href="#">Fastfood</a></li>

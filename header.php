@@ -62,33 +62,43 @@ if (isset($_SESSION['user'])) {
                 <a href="./logout"><i class="fa fa-user"></i> Logout</a>
         
                 <ul>
-                    <?php if ($category === 'sup_admin'): ?>
-                        <li><a href="./adm_dashboard"><i class="fa fa-user"></i> Dashboard</a></li>
-                        <li><a href="./view_companies"><i class="fa fa-user"></i> View Registered Companies</a></li>
-                        <li><a href="./enroll_company"><i class="fa fa-user"></i> Enroll New Company</a></li>
-                        <li><a href="./order_list"><i class="fa fa-user"></i> View Orders List</a></li>
+                     <?php if ($category === 'sup_admin'): ?>
+                        <li><a href="./adm_dashboard">Dashboard</a></li>
+                        <li><a href="./view_companies">View Registered Companies</a></li>
+                        <li><a href="./enroll_company">Enroll New Company</a></li>
+                        <li><a href="./order_list">View Orders List</a></li>
                     <?php elseif ($category === 'company'): ?>
-                        <li><a href="./adm_dashboard"><i class="fa fa-user"></i> Dashboard</a></li>
-                        <li><a href="./view_items"><i class="fa fa-user"></i> View Listed Items</a></li>
+                        <li><a href="./com_dashboard">Dashboard</a></li>
+                        <li><a href="./view_company_order_list">View Order List</a></li>
+                        <li><a href="./view_company_dispatched_list">View Dispatched Order List</a></li>
                     <?php elseif ($category === 'delivery_agent'):  ?>
-                        <li><a href="./deli_dashboard"><i class="fa fa-user"></i> Home</a></li>
-                        <li><a href="./view_undeliveredOrders"><i class="fa fa-user"></i> View Undelivered / Delivered Orders</a></li>
-                        
+                        <li><a href="./deli_dashboard">Home</a></li>
+                        <li><a href="./view_undeliveredOrders">View Undelivered /Delivered Orders</a></li>
                     <?php else: ?>
-                        <li><a href="./dashboard"><i class="fa fa-user"></i> Home</a></li>
-                        <li><a href="./shoping-cart"><i class="fa fa-user"></i> View Cart</a></li>
-                        <li><a href="./contact.html"><i class="fa fa-user"></i> Contact</a></li>
+                        <li><a href="./dashboard">Home</a></li>
+                        <li><a href="./shoping-cart">View Cart</a></li>
+                        <li><a href="./contact.html">Contact</a></li>
                     <?php endif; ?>
                 
                 </ul>
                 
             </div>
+            <?php if ($category === 'customer'): ?>
+                <div class="col-lg-3">
+                    <div class="header__cart">
+                        <ul>
+                            <li><a href="./shoping-cart"><i class="fa fa-shopping-bag"></i> <span id="cart-count">0</span></a></li>
+                        </ul>
+                        <div class="header__cart__price">item: <span id="">₹0.00</span></div>
+                    </div>
+                </div>
+            <?php endif; ?>    
 
         </div>
          
         <div class="humberger__menu__contact">
             <ul>
-                <li><i class="fa fa-envelope"></i> info@FreshFare.aurats.com</li>
+                <li><i class="fa fa-envelope"></i> info@freshfare.in</li>
                 <li>Free Shipping for all Order</li>
             </ul>
         </div>
@@ -103,7 +113,7 @@ if (isset($_SESSION['user'])) {
                     <div class="col-lg-6 col-md-6">
                         <div class="header__top__left">
                             <ul>
-                                <li><i class="fa fa-envelope"></i> info@freshfare.aurats.com</li>
+                                <li><i class="fa fa-envelope"></i> info@freshfare.in</li>
                                 <li>Free Shipping for all Order </li>
                             </ul>
                         </div>
@@ -139,8 +149,9 @@ if (isset($_SESSION['user'])) {
                                 <li><a href="./enroll_company">Enroll New Company</a></li>
                                 <li><a href="./order_list">View Orders List</a></li>
                             <?php elseif ($category === 'company'): ?>
-                                <li><a href="./adm_dashboard">Dashboard</a></li>
-                                <li><a href="./view_items">View Listed Items</a></li>
+                                <li><a href="./com_dashboard">Dashboard</a></li>
+                                <li><a href="./view_company_order_list">View Order List</a></li>
+                                <li><a href="./view_company_dispatched_list">View Dispatched Order List</a></li>
                             <?php elseif ($category === 'delivery_agent'):  ?>
                                 <li><a href="./deli_dashboard">Home</a></li>
                                 <li><a href="./view_undeliveredOrders">View Undelivered /Delivered Orders</a></li>
@@ -154,15 +165,16 @@ if (isset($_SESSION['user'])) {
                     </nav>
                      
                 </div>
-               
-                <div class="col-lg-3">
-                    <div class="header__cart">
-                        <ul>
-                            <li><a href="./shoping-cart"><i class="fa fa-shopping-bag"></i> <span id="cart-count">0</span></a></li>
-                        </ul>
-                        <div class="header__cart__price">item: <span id="">₹0.00</span></div>
+                <?php if ($category === 'customer'): ?>
+                    <div class="col-lg-3">
+                        <div class="header__cart">
+                            <ul>
+                                <li><a href="./shoping-cart"><i class="fa fa-shopping-bag"></i> <span id="cart-count">0</span></a></li>
+                            </ul>
+                            <div class="header__cart__price">item: <span id="">₹0.00</span></div>
+                        </div>
                     </div>
-                </div>
+                <?php endif; ?>    
             </div>
            
             <div class="humberger__open">

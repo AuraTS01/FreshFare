@@ -147,12 +147,12 @@
             <div class="container">
                 <div class="row">
                     <div class="col-lg-3">
-                        <div class="header__logo d-flex align-items-center">
-                            <a href="./index.php" class="logo-brand d-flex align-items-center text-decoration-none">
+                        <div class="header__logo d-flex justify-content-center align-items-center mb-4">
+                            <a href="./index" class="logo-brand d-flex align-items-center text-decoration-none">
                                 <img src="img/logo.png" alt="Logo" class="logo-img">
                                 <span class="logo-text">
-                                <span class="logo-green">F</span><span class="logo-black">resh </span>
-                                <span class="logo-green">F</span><span class="logo-black">are</span>
+                                    <span class="logo-green">F</span><span class="logo-black">resh </span>
+                                    <span class="logo-green">F</span><span class="logo-black">are</span>
                                 </span>
                             </a>
                         </div>

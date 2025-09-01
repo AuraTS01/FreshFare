@@ -138,7 +138,7 @@ if (isset($_SESSION['user']))
             </div>
 
             <div class="table-responsive">
-                <table id="ordersTable" class="table table-hover align-middle">
+                <table id="undeliveredordersTable" class="table table-striped table-bordered">
                     <thead class="table-dark">
                         <tr>
                             <th>Order ID</th>

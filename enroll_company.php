@@ -74,6 +74,32 @@ if (isset($_SESSION['user']))
                         <input class="form-check-input" type="checkbox" name="selling[]" value="Kadai" id="chkKadai">
                         <label class="form-check-label" for="chkKadai">Kadai</label>
                     </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="selling[]" value="mutton_boti" id="mutton_boti">
+                        <label class="form-check-label" for="chkKadai">Mutton - Boti</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="selling[]" value="mutton_liver" id="mutton_liver">
+                        <label class="form-check-label" for="chkKadai">Mutton Liver</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="selling[]" value="beef" id="beef">
+                        <label class="form-check-label" for="chkKadai">Beef</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="selling[]" value="beef_boti" id="beef_boti">
+                        <label class="form-check-label" for="chkKadai">Beef Boti</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="selling[]" value="beef_liver" id="beef_liver">
+                        <label class="form-check-label" for="chkKadai">Beef Liver</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="selling[]" value="duck" id="chkduck">
+                        <label class="form-check-label" for="chkKadai">Duck</label>
+                    </div>
+                    
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">Email</label>

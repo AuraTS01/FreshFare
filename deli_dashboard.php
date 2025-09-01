@@ -32,12 +32,12 @@ if (isset($_SESSION['user']))
 
        // Pending Orders (not yet picked)
         $sqlPending = "SELECT COUNT(*) AS pending_orders 
-                       FROM orders WHERE status='pending'";
+                       FROM orders WHERE status='dispatched' OR status='pending'";
         $pendingOrders = $login_db->query($sqlPending)->fetch_assoc()['pending_orders'] ?? 0;
 
         // Picked Up Orders (but not delivered yet)
         $sqlPicked = "SELECT COUNT(*) AS picked_orders 
-                      FROM orders WHERE status='Order Picked Up'";
+                      FROM orders WHERE status='picked'";
         $pickedOrders = $login_db->query($sqlPicked)->fetch_assoc()['picked_orders'] ?? 0;
 
        

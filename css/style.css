@@ -378,7 +378,10 @@ ol {
 }
 
 .header__logo {
-	padding: 15px 0;
+	display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
 }
 
 .header__logo a {
@@ -3518,32 +3521,102 @@ ol {
 }
 
 .login-container {
-	max-width: 400px;
-	margin: 100px auto;
-	background: #ffffff;
-	padding: 30px;
-	border-radius: 10px;
-	box-shadow: 7px 11px 10px #d6d6d6;
+    max-width: 400px;
+    margin: 80px auto;
+    background: #ffffff;
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 15px 25px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+.login-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 30px rgba(0,0,0,0.15), 0 8px 15px rgba(0,0,0,0.07);
+}
+
+/* Logo */
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+}
 
 .logo-img {
-  height: 50px;
-  margin-right: 10px;
+    height: 55px;
+    margin-right: 12px;
+    transition: transform 0.3s ease;
+}
+
+.logo-img:hover {
+    transform: rotate(10deg) scale(1.1);
+	box-shadow: 0 8px 15px rgba(127, 173, 57, 0.3);
 }
 
 .logo-text {
-  font-weight: bold;
-  font-size: 35px;
-  font-family: "Cambria", Georgia, serif;
+    font-weight: 800;
+    font-size: 38px;
+    font-family: "Cambria", Georgia, serif;
+    letter-spacing: 1px;
+    display: flex;             /* align letters horizontally */
+    align-items: center;       /* vertically center the letters */
+    flex-wrap: nowrap;         /* prevent wrapping to next line */
 }
-
 .logo-green {
-  color: #7fad39;
+    color: #7fad39;
+    text-shadow: 2px 2px 4px rgba(127, 173, 57, 0.5);
+    display: inline-block;
 }
 
+/* Black letters */
 .logo-black {
-  color: #000;
+    color: #000;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    display: inline-block;
+}
+
+.logo-brand:hover .logo-text {
+    transform: translateY(-3px);
+    transition: transform 0.3s ease;
+}
+
+/* Input fields */
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0 20px 0;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.login-container input[type="text"]:focus,
+.login-container input[type="password"]:focus {
+    border-color: #7fad39;
+    box-shadow: 0 0 8px rgba(127, 173, 57, 0.3);
+}
+
+/* Button */
+.login-container button {
+    width: 100%;
+    padding: 12px 0;
+    background: linear-gradient(135deg, #7fad39, #a3d739);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 10px rgba(127, 173, 57, 0.3);
+}
+
+.login-container button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 15px rgba(127, 173, 57, 0.4);
 }
 
 
@@ -3877,7 +3950,7 @@ ol {
     font-weight: 500;
     color: #333;
     cursor: pointer;
-    width: 80px;
+    width: 100%;
     transition: all 0.25s ease-in-out;
 }
 
@@ -3939,3 +4012,156 @@ ol {
     border-right: none;
     height: 36px;
 }
+
+
+.company-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.company-placeholder {
+    width: 50px;
+    height: 50px;
+    background-color: #007bff;
+    color: #fff;
+    font-weight: bold;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    text-transform: uppercase;
+}
+
+
+.signup-container {
+    max-width: 450px;
+    margin: 60px auto;
+    padding: 30px 25px; /* equivalent to p-4 */
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 15px 25px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.signup-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 30px rgba(0,0,0,0.15), 0 8px 15px rgba(0,0,0,0.07);
+}
+
+/* Header / Title */
+.signup-container h2 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    letter-spacing: 1px;
+    color: #333;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Input fields */
+.signup-container input[type="text"],
+.signup-container input[type="email"],
+.signup-container input[type="password"] {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0 20px 0;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.signup-container input[type="text"]:focus,
+.signup-container input[type="email"]:focus,
+.signup-container input[type="password"]:focus {
+    border-color: #7fad39;
+    box-shadow: 0 0 8px rgba(127, 173, 57, 0.3);
+}
+
+/* Buttons */
+.signup-container button {
+    width: 100%;
+    padding: 12px 0;
+    background: linear-gradient(135deg, #7fad39, #a3d739);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 10px rgba(127, 173, 57, 0.3);
+}
+
+.signup-container button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 15px rgba(127, 173, 57, 0.4);
+}
+
+/* Optional: small links */
+.signup-container .small-link {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+    color: #7fad39;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.signup-container .small-link:hover {
+    color: #5f8c2c;
+}
+
+/* Footer Logo Container */
+.footer__about__logo .footer-logo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* align to left */
+}
+/* Footer Logo container */
+.footer__about__logo .footer-logo {
+    display: flex;            /* horizontal layout */
+    align-items: center;      /* vertically center text with image */
+    gap: 8px;                 /* space between image and text */
+    flex-wrap: nowrap;        /* prevent wrapping */
+}
+
+/* Logo Image */
+.footer__about__logo .logo-img {
+    height: 45px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.footer__about__logo .logo-img:hover {
+    transform: rotate(5deg) scale(1.05);
+    box-shadow: 0 5px 10px rgba(127, 173, 57, 0.3);
+}
+
+/* Logo Text */
+.footer__about__logo .logo-text {
+    display: flex;            /* horizontal layout for letters */
+    align-items: center;
+    flex-wrap: nowrap;
+    font-weight: 700;
+    font-size: 28px;
+    font-family: "Cambria", Georgia, serif;
+    letter-spacing: 0.5px;
+}
+
+/* Green letters */
+.footer__about__logo .logo-green {
+    color: #7fad39;
+    text-shadow: 1px 1px 3px rgba(127, 173, 57, 0.4);
+}
+
+/* Black letters */
+.footer__about__logo .logo-black {
+    color: #000;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
