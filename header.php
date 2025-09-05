@@ -71,13 +71,15 @@ if (isset($_SESSION['user'])) {
                         <li><a href="./com_dashboard">Dashboard</a></li>
                         <li><a href="./view_company_order_list">View Order List</a></li>
                         <li><a href="./view_company_dispatched_list">View Dispatched Order List</a></li>
+                        <li><a href="./com_fixPrice">Fix Price for Products</a></li>
                     <?php elseif ($category === 'delivery_agent'):  ?>
                         <li><a href="./deli_dashboard">Home</a></li>
                         <li><a href="./view_undeliveredOrders">View Undelivered /Delivered Orders</a></li>
-                    <?php else: ?>
+                   <?php else: ?>
                         <li><a href="./dashboard">Home</a></li>
                         <li><a href="./shoping-cart">View Cart</a></li>
-                        <li><a href="./contact.html">Contact</a></li>
+                        <li><a href="./order_history">Order History</a></li>
+                        
                     <?php endif; ?>
                 
                 </ul>
@@ -152,13 +154,15 @@ if (isset($_SESSION['user'])) {
                                 <li><a href="./com_dashboard">Dashboard</a></li>
                                 <li><a href="./view_company_order_list">View Order List</a></li>
                                 <li><a href="./view_company_dispatched_list">View Dispatched Order List</a></li>
+                                <li><a href="./com_fixPrice">Fix Price for Products</a></li>
                             <?php elseif ($category === 'delivery_agent'):  ?>
                                 <li><a href="./deli_dashboard">Home</a></li>
                                 <li><a href="./view_undeliveredOrders">View Undelivered /Delivered Orders</a></li>
                             <?php else: ?>
                                 <li><a href="./dashboard">Home</a></li>
                                 <li><a href="./shoping-cart">View Cart</a></li>
-                                <li><a href="./contact.html">Contact</a></li>
+                                <li><a href="./order_history">Order History</a></li>
+                                
                             <?php endif; ?>
                             
                         </ul>

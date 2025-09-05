@@ -852,7 +852,7 @@
                         <div class="text-muted small">${order.payment_mode}</div>
                     </td>
                     <td>${itemsHtml}</td>
-                    <td>₹${parseFloat(order.calculated_total).toFixed(0)}</td>
+                    <td>₹${parseFloat(order.total_price).toFixed(0)}</td>
                     <td>${order.order_date}</td>
                     <td>
                         <button onclick="updateOrderStatus(${order.order_id}, '${nextStatus}')" 
@@ -1053,29 +1053,6 @@
         });
     </script>
 
-    <script>
-    
-        $(document).ready(function() {
-            $('#dispatchedTable').DataTable({
-                "paging": true,
-                "ordering": true,
-                "searching": true,
-                "responsive": true
-            });
-        });
-    </script>
-     <script>
-    
-       $(document).ready(function() {
-            $('#undeliveredordersTable').DataTable({
-                paging: true,
-                searching: true,
-                ordering: true,
-                responsive: true
-            });
-        });
-
-    </script>
 
 
 

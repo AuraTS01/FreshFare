@@ -185,12 +185,12 @@ if (isset($_SESSION['user']))
         function getAdjustedPrice(float $basePrice): float {
             if ($basePrice <= 100) {
                 return $basePrice + 10;
-            } elseif ($basePrice <= 249) {
-                return $basePrice + 25;
-            } elseif ($basePrice <= 350) {
-                return $basePrice + 30;
+            } elseif ($basePrice <= 200) {
+                return $basePrice + 15;
+            } elseif ($basePrice <= 349) {
+                return $basePrice + 20;
             } else { // > 350
-                return $basePrice + 40;
+                return $basePrice + 25;
             }
         }
         // Split items by commas but ignore commas inside parentheses.

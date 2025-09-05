@@ -518,123 +518,36 @@ if (isset($_POST['fetch_orders'])) {
             oi.quantity,
             oi.unit,
             oi.pickup_status,
-            CASE 
-                WHEN oi.item_name = 'chicken_with_skin' THEN COALESCE(ip.chicken_with_skin_price,0)
-                WHEN oi.item_name = 'chicken_without_skin' THEN COALESCE(ip.chicken_without_skin_price,0)
-                WHEN oi.item_name = 'prawn' THEN COALESCE(ip.prawn_price,0)
-                WHEN oi.item_name = 'mutton' THEN COALESCE(ip.mutton_price,0)
-                WHEN oi.item_name = 'fish' THEN COALESCE(ip.fish_price,0)
-                WHEN oi.item_name = 'kadai' THEN COALESCE(ip.kadai_price,0)
-                WHEN oi.item_name = 'mutton_boti' THEN COALESCE(ip.mutton_boti_price,0)
-                WHEN oi.item_name = 'mutton_liver' THEN COALESCE(ip.mutton_Liver_price,0)
-                WHEN oi.item_name = 'beef' THEN COALESCE(ip.beef_price,0)
-                WHEN oi.item_name = 'beef_liver' THEN COALESCE(ip.beef_liver_price,0)
-                WHEN oi.item_name = 'beef_boti' THEN COALESCE(ip.beef_boti_price,0)
-                WHEN oi.item_name = 'duck' THEN COALESCE(ip.duck_price,0)
-                ELSE 0
-            END AS base_price
-
+            oi.company_id,
+            ip.*
         FROM orders o
-        JOIN fresh_fare_signup c 
-            ON c.id = o.customer_id
-        JOIN order_items oi 
-            ON oi.order_id = o.id
-        LEFT JOIN company_registration cr 
-            ON cr.signup_id = c.id             -- ✅ don’t block if no company row
+        JOIN fresh_fare_signup c ON c.id = o.customer_id
+        JOIN order_items oi ON oi.order_id = o.id
         LEFT JOIN item_price ip ON ip.company_id = oi.company_id
-
-        WHERE o.status IN ('pending', 'acknowledged') 
+        WHERE o.status = 'pending' OR o.status = 'acknowledged'
         ORDER BY o.order_date DESC, o.id DESC
-    ";
-
-
-        $res = $login_db->query($sql);
-        $orders = [];
-
-        if ($res && $res->num_rows) {
-            while ($r = $res->fetch_assoc()) {
-                $oid = (int)$r['order_id'];
-
-                if (!isset($orders[$oid])) {
-                    $orders[$oid] = [
-                        'order_id' => $oid,
-                        'order_code' => $r['order_code'],
-                        'order_date' => $r['order_date'],
-                        'payment_mode' => $r['payment_mode'],
-                        'status' => $r['status'],
-                        'customer_name' => $r['customer_name'],
-                        'mob_num' => $r['mob_num'],
-                        'items' => [],
-                        'calculated_total' => 0,
-                    ];
-                }
-
-                // ✅ Add item with base price
-                $orders[$oid]['items'][] = [
-                    'order_item_id' => (int)$r['order_item_id'],
-                    'item_name' => $r['item_name'],
-                    'quantity' => (float)$r['quantity'],
-                    'unit' => $r['unit'],
-                    'price' => (float)$r['base_price'],
-                    'pickup_status' => $r['pickup_status'],
-                ];
-
-                // ✅ Add to recalculated total
-                $orders[$oid]['calculated_total'] += 
-                    (isset($r['base_price']) && is_numeric($r['base_price']) ? (float)$r['base_price'] : 0) 
-                    * 
-                    (isset($r['quantity']) && is_numeric($r['quantity']) ? (float)$r['quantity'] : 0);
-
-            }
-        }
-
-    echo json_encode(array_values($orders));
-    // exit;
-}
-
-if (isset($_POST['fetch_dispatched'])) {
-    $sql = "
-        SELECT 
-            o.id AS order_id,
-            o.order_code,
-            o.order_date,
-            o.payment_mode,
-            o.status,
-            o.total_price,               -- added total_price
-            c.username AS customer_name,
-            c.mob_num,
-            oi.id AS order_item_id,
-            oi.item_name,
-            oi.quantity,
-            oi.unit,
-            oi.pickup_status,
-            CASE 
-                WHEN oi.item_name = 'chicken_with_skin' THEN COALESCE(ip.chicken_with_skin_price,0)
-                WHEN oi.item_name = 'chicken_without_skin' THEN COALESCE(ip.chicken_without_skin_price,0)
-                WHEN oi.item_name = 'prawn' THEN COALESCE(ip.prawn_price,0)
-                WHEN oi.item_name = 'mutton' THEN COALESCE(ip.mutton_price,0)
-                WHEN oi.item_name = 'fish' THEN COALESCE(ip.fish_price,0)
-                WHEN oi.item_name = 'kadai' THEN COALESCE(ip.kadai_price,0)
-                WHEN oi.item_name = 'mutton_boti' THEN COALESCE(ip.mutton_boti_price,0)
-                WHEN oi.item_name = 'mutton_liver' THEN COALESCE(ip.mutton_Liver_price,0)
-                WHEN oi.item_name = 'beef' THEN COALESCE(ip.beef_price,0)
-                WHEN oi.item_name = 'beef_liver' THEN COALESCE(ip.beef_liver_price,0)
-                WHEN oi.item_name = 'beef_boti' THEN COALESCE(ip.beef_boti_price,0)
-                WHEN oi.item_name = 'duck' THEN COALESCE(ip.duck_price,0)
-                ELSE 0
-            END AS base_price
-        FROM orders o
-        JOIN fresh_fare_signup c 
-            ON c.id = o.customer_id
-        JOIN order_items oi 
-            ON oi.order_id = o.id
-        LEFT JOIN item_price ip 
-            ON ip.company_id = oi.company_id
-        WHERE o.status = 'dispatched'
-        ORDER BY o.order_date DESC, o.id DESC
-
     ";
     $res = $login_db->query($sql);
+
+    // ✅ function to normalize item names
+    function normalizeItem($name) {
+        $name = strtolower(trim($name));
+
+        if (strpos($name, 'chicken with skin') !== false) return 'chicken_with_skin_price';
+        if (strpos($name, 'chicken without skin') !== false) return 'chicken_without_skin_price';
+        if (strpos($name, 'mutton liver') !== false) return 'mutton_liver_price';
+        if (strpos($name, 'mutton boti') !== false) return 'mutton_boti_price';
+        if (strpos($name, 'beef liver') !== false) return 'beef_liver_price';
+        if (strpos($name, 'beef boti') !== false) return 'beef_boti_price';
+        if (strpos($name, 'mutton') !== false) return 'mutton_price';
+        if (strpos($name, 'beef') !== false) return 'beef_price';
+        if (strpos($name, 'fish') !== false) return 'fish_price';
+        if (strpos($name, 'prawn') !== false) return 'prawn_price';
+        if (strpos($name, 'duck') !== false) return 'duck_price';
+        if (strpos($name, 'kadai') !== false) return 'kadai_price';
+
+        return null; // no match
+    }
 
     $orders = [];
     if ($res && $res->num_rows) {
@@ -647,7 +560,7 @@ if (isset($_POST['fetch_dispatched'])) {
                     'order_code'    => $r['order_code'],
                     'order_date'    => $r['order_date'],
                     'payment_mode'  => $r['payment_mode'],
-                    'total_price'   => (float)$r['total_price'],
+                    'total_price'   => 0,
                     'status'        => $r['status'],
                     'customer_name' => $r['customer_name'],
                     'mob_num'       => $r['mob_num'],
@@ -655,21 +568,129 @@ if (isset($_POST['fetch_dispatched'])) {
                 ];
             }
 
+            // ✅ Normalize item name → price column
+            $priceColumn = normalizeItem($r['item_name']);
+            $debug = [
+                'item_name'   => $r['item_name'],
+                'normalized'  => $priceColumn,
+                'columnValue' => $priceColumn ? $r[$priceColumn] : 'NO MATCH'
+            ];
+            error_log(json_encode($debug));
+            $base_price = ($priceColumn && isset($r[$priceColumn])) ? (float)$r[$priceColumn] : 0;
+
+
+            $line_total = $base_price * (float)$r['quantity'];
+            $orders[$oid]['total_price'] += $line_total;
+
             $orders[$oid]['items'][] = [
                 'order_item_id' => (int)$r['order_item_id'],
                 'item_name'     => $r['item_name'],
                 'quantity'      => (float)$r['quantity'],
                 'unit'          => $r['unit'],
-                'price'         => (float)$r['base_price'],   // use base_price
-                'pickup_status' => $r['pickup_status'],       // use pickup_status
+                'price'         => $base_price,
+                'pickup_status' => $r['pickup_status'],
             ];
-
         }
     }
 
     echo json_encode(array_values($orders));
-    // exit;
 }
+
+
+if (isset($_POST['fetch_dispatched'])) {
+    $sql = "
+        SELECT 
+            o.id AS order_id,
+            o.order_code,
+            o.order_date,
+            o.payment_mode,
+            o.status,
+            c.username AS customer_name,
+            c.mob_num,
+            oi.id AS order_item_id,
+            oi.item_name,
+            oi.quantity,
+            oi.unit,
+            oi.pickup_status,
+            oi.company_id,
+            ip.*
+        FROM orders o
+        JOIN fresh_fare_signup c ON c.id = o.customer_id
+        JOIN order_items oi ON oi.order_id = o.id
+        LEFT JOIN item_price ip ON ip.company_id = oi.company_id
+        WHERE o.status = 'dispatched'
+        ORDER BY o.order_date DESC, o.id DESC
+    ";
+    $res = $login_db->query($sql);
+
+    // ✅ function to normalize item names
+    function normalizeItem($name) {
+        $name = strtolower(trim($name));
+
+        if (strpos($name, 'chicken with skin') !== false) return 'chicken_with_skin_price';
+        if (strpos($name, 'chicken without skin') !== false) return 'chicken_without_skin_price';
+        if (strpos($name, 'mutton liver') !== false) return 'mutton_liver_price';
+        if (strpos($name, 'mutton boti') !== false) return 'mutton_boti_price';
+        if (strpos($name, 'beef liver') !== false) return 'beef_liver_price';
+        if (strpos($name, 'beef boti') !== false) return 'beef_boti_price';
+        if (strpos($name, 'mutton') !== false) return 'mutton_price';
+        if (strpos($name, 'beef') !== false) return 'beef_price';
+        if (strpos($name, 'fish') !== false) return 'fish_price';
+        if (strpos($name, 'prawn') !== false) return 'prawn_price';
+        if (strpos($name, 'duck') !== false) return 'duck_price';
+        if (strpos($name, 'kadai') !== false) return 'kadai_price';
+
+        return null; // no match
+    }
+
+    $orders = [];
+    if ($res && $res->num_rows) {
+        while ($r = $res->fetch_assoc()) {
+            $oid = (int)$r['order_id'];
+
+            if (!isset($orders[$oid])) {
+                $orders[$oid] = [
+                    'order_id'      => $oid,
+                    'order_code'    => $r['order_code'],
+                    'order_date'    => $r['order_date'],
+                    'payment_mode'  => $r['payment_mode'],
+                    'total_price'   => 0,
+                    'status'        => $r['status'],
+                    'customer_name' => $r['customer_name'],
+                    'mob_num'       => $r['mob_num'],
+                    'items'         => [],
+                ];
+            }
+
+            // ✅ Normalize item name → price column
+            $priceColumn = normalizeItem($r['item_name']);
+            $debug = [
+                'item_name'   => $r['item_name'],
+                'normalized'  => $priceColumn,
+                'columnValue' => $priceColumn ? $r[$priceColumn] : 'NO MATCH'
+            ];
+            error_log(json_encode($debug));
+            $base_price = ($priceColumn && isset($r[$priceColumn])) ? (float)$r[$priceColumn] : 0;
+
+
+            $line_total = $base_price * (float)$r['quantity'];
+            $orders[$oid]['total_price'] += $line_total;
+
+            $orders[$oid]['items'][] = [
+                'order_item_id' => (int)$r['order_item_id'],
+                'item_name'     => $r['item_name'],
+                'quantity'      => (float)$r['quantity'],
+                'unit'          => $r['unit'],
+                'price'         => $base_price,
+                'pickup_status' => $r['pickup_status'],
+            ];
+        }
+    }
+
+    echo json_encode(array_values($orders));
+}
+
+
 
 if(isset($_POST['updateCategory'])){
     $email = $_POST['email'];
@@ -689,6 +710,34 @@ if(isset($_POST['updateCategory'])){
     }
 }
 
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['company_id'])) {
+    $company_id = intval($_POST['company_id']);
+
+    // Ensure item_price row exists
+    $check = $login_db->query("SELECT * FROM item_price WHERE company_id = $company_id");
+    if ($check->num_rows == 0) {
+        $login_db->query("INSERT INTO item_price (company_id) VALUES ($company_id)");
+    }
+
+    $updates = [];
+    foreach ($_POST as $field => $value) {
+        if ($field === "company_id") continue;
+        $price = floatval($value);
+        $updates[] = "`$field` = $price";
+    }
+
+    if (!empty($updates)) {
+        $sql = "UPDATE item_price SET " . implode(", ", $updates) . " WHERE company_id = $company_id";
+        if ($login_db->query($sql)) {
+            $message = "<div class='alert alert-success'></div>";
+            header("Location: ./com_fixPrice?msg=Prices updated successfully!");
+        } else {
+            // $message = "<div class='alert alert-danger'>"</div>";
+            header("Location: ./com_fixPrice?err=Error updating prices: " . $login_db->error);
+        }
+    }
+}
 
 ?>
 
