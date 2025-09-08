@@ -228,21 +228,25 @@ if(isset($_POST['billingAddressSave'])){
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] === 'save_order') {
     header("Content-Type: application/json");
 
-    // ✅ Check if user is logged in
     if (!isset($_SESSION['email'])) {
         echo json_encode(['status' => 'error', 'message' => 'User not logged in']);
         exit;
     }
 
-    // ✅ Decode incoming JSON
     $data = json_decode(file_get_contents("php://input"), true);
     $payment_mode = $data['payment_mode'] ?? 'unknown';
+    $payment_id   = $data['payment_id'] ?? null;
     $cart = $data['cart'] ?? [];
     $status = 'pending';
 
     if (empty($cart)) {
         echo json_encode(['status' => 'error', 'message' => 'Cart is empty']);
         exit;
+    }
+
+    // ✅ Finalize payment_mode
+    if ($payment_mode === "razorpay" && $payment_id) {
+        $payment_mode = "rzrpay_" . $payment_id;
     }
 
     // ✅ Calculate total price
@@ -268,14 +272,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
     $customer_id = $res->fetch_assoc()['id'];
     $stmt->close();
 
-    // ✅ Get company_id from the first cart item
+    // ✅ Get company_id from first cart item
     $firstCompanyId = isset($cart[0]['company_id']) ? (int)$cart[0]['company_id'] : 0;
     if ($firstCompanyId === 0) {
         echo json_encode(['status' => 'error', 'message' => 'Missing company_id for order']);
         exit;
     }
 
-    // ✅ Insert order (with company_id)
+    // ✅ Insert order
     $order_code = "ORD" . rand(100000, 999999);
     $order_date = date("Y-m-d H:i:s");
 
@@ -283,25 +287,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
         INSERT INTO orders (customer_id, company_id, order_code, order_date, payment_mode, total_price, status)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     ");
-    $stmt->bind_param("iisssds", $customer_id, $firstCompanyId, $order_code, $order_date, $payment_mode, $total,$status);
+    $stmt->bind_param("iisssds", $customer_id, $firstCompanyId, $order_code, $order_date, $payment_mode, $total, $status);
 
     try {
         $stmt->execute();
-        $order_db_id = $stmt->insert_id; // actual PK ID
+        $order_db_id = $stmt->insert_id;
         $stmt->close();
     } catch (mysqli_sql_exception $e) {
         echo json_encode(['status' => 'error', 'message' => 'Order insert failed: ' . $e->getMessage()]);
         exit;
     }
 
-    // ✅ Insert each cart item into order_items with company_id
+    // ✅ Insert items
     foreach ($cart as $item) {
         $item_name  = $item['name'] ?? 'Unknown';
         $quantity   = isset($item['quantity']) ? (float)$item['quantity'] : 0;
         $price      = isset($item['price']) ? (float)$item['price'] : 0;
         $company_id = isset($item['company_id']) ? (int)$item['company_id'] : 0;
-        $unit       = 'Kg'; // default unit
-        $status     = 'pending';
+        $unit       = 'Kg';
+        $pickup_status = 'pending';
 
         if ($company_id === 0) {
             echo json_encode(['status' => 'error', 'message' => 'Missing company_id for item', 'item' => $item]);
@@ -310,27 +314,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
 
         $stmt = $login_db->prepare("
             INSERT INTO order_items (order_id, item_name, quantity, unit, price, company_id, pickup_status)
-            VALUES (?, ?, ?, ?, ?, ?,?)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
-        $stmt->bind_param("isdsdis", $order_db_id, $item_name, $quantity, $unit, $price, $company_id, $status);
+        $stmt->bind_param("isdsdis", $order_db_id, $item_name, $quantity, $unit, $price, $company_id, $pickup_status);
 
         try {
             $stmt->execute();
             $stmt->close();
         } catch (mysqli_sql_exception $e) {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Item insert failed: ' . $e->getMessage(),
-                'failed_item' => $item
-            ]);
+            echo json_encode(['status' => 'error', 'message' => 'Item insert failed: ' . $e->getMessage()]);
             exit;
         }
     }
 
-    // ✅ Success
     echo json_encode(['status' => 'success', 'order_id' => $order_code]);
-    exit;
+    // exit;
 }
+
+
 
 
 

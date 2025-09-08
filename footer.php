@@ -275,7 +275,18 @@
     <script src="js/owl.carousel.min.js"></script>
     <script src="js/main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>   
-    
+
+    <script>
+
+        function displayAlert(message, icon="⚠️") {
+            document.getElementById("alertMessage").innerText = message;
+            document.getElementById("iconBox").innerText = icon;
+            document.getElementById("alertBox").style.display = "flex";
+        }
+        function closePopup() {
+            document.getElementById("alertBox").style.display = "none";
+        }
+    </script>
     <script>
         const modal = document.getElementById("privacyModal"); // modal
         const link = document.getElementById("openModal");     // link
@@ -578,7 +589,10 @@
 
         
     </script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
+        let cartTotal = 0; // global variable to hold total
+
         function renderOrderSummary() {
             const cart = JSON.parse(localStorage.getItem("cart")) || [];
             const orderList = document.getElementById("orderItems");
@@ -601,6 +615,8 @@
 
             subtotalElement.textContent = `₹${subtotal.toFixed(2)}`;
             totalElement.textContent = `₹${subtotal.toFixed(2)}`;
+
+            cartTotal = subtotal; // store total globally
         }
 
         document.addEventListener("DOMContentLoaded", renderOrderSummary);
@@ -647,59 +663,124 @@
         document.addEventListener("DOMContentLoaded", renderOrderDetails);
     </script>
     <script>
+    
+
         const devNotice = document.getElementById("devNotice");
         const codSection = document.getElementById("codSection");
 
+        // 🟢 Embed PHP session values for customer
+        const customerName = "<?= addslashes($_SESSION['username'] ?? 'Customer') ?>";
+        const customerEmail = "<?= addslashes($_SESSION['email'] ?? 'customer@example.com') ?>";
+        const customerContact = "<?= addslashes($_SESSION['mob_num'] ?? '9876543210') ?>";
+
         // Toggle payment method visibility
         document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
-        radio.addEventListener("change", () => {
-            const selected = radio.value;
-            if (selected === "cod") {
-            codSection.classList.remove("d-none");
-            devNotice.classList.add("d-none");
-            } else {
-            devNotice.classList.remove("d-none");
-            codSection.classList.add("d-none");
-            }
-        });
+            radio.addEventListener("change", () => {
+                const selected = radio.value;
+                if (selected === "cod") {
+                    codSection.classList.remove("d-none");
+                    devNotice.classList.add("d-none");
+                } else {
+                    devNotice.classList.remove("d-none");
+                    codSection.classList.add("d-none");
+                }
+            });
         });
 
         // 🟢 Place Order Submit Handler
         document.getElementById("paymentForm").addEventListener("submit", function (e) {
-        e.preventDefault();
-        const selected = document.querySelector("input[name='paymentMethod']:checked").value;
+            e.preventDefault();
+            const selectedRadio = document.querySelector("input[name='paymentMethod']:checked");
 
-        if (selected !== "cod") {
-            alert("Please choose Pay on Delivery to continue.");
-            return;
-        }
-
-        const cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-        fetch("database.php?action=save_order", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                payment_mode: selected,
-                cart: cart
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === "success") {
-            localStorage.setItem("latest_order_id", data.order_id); // optional
-            localStorage.removeItem("cart"); // clear cart
-            window.location.href = "order_summary";
-            } else {
-            alert("Failed to place order: " + data.message);
+            if (!selectedRadio) {
+                displayAlert("Please select a payment method before proceeding.", "⚠️");
+                return;
             }
-        })
-        .catch(err => {
-            console.error("Order error:", err);
-            alert("Something went wrong. Please try again.");
-        });
+
+            const selected = selectedRadio.value;
+            const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+            if (selected === "cod") {
+                codSection.classList.remove("d-none");
+                devNotice.classList.add("d-none");
+                // ✅ COD Flow
+                fetch("database.php?action=save_order", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        payment_mode: "cod",
+                        cart: cart
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        localStorage.setItem("latest_order_id", data.order_id);
+                        localStorage.removeItem("cart");
+                        window.location.href = "order_summary";
+                    } else {
+                        displayAlert("Failed to place order: " + data.message, "❌");
+                    }
+                })
+                .catch(err => {
+                    console.error("Order error:", err);
+                    displayAlert("Something went wrong. Please try again.", "⚠️");
+                });
+            } 
+
+            else if (selected === "razorpay") {
+                // ✅ Razorpay Flow
+                let total = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+
+                const options = {
+                    "key": "rzp_live_RF78uExNtRB1Cq", // replace with live/test key
+                    "amount": total * 100, // Razorpay takes amount in paise
+                    "currency": "INR",
+                    "name": "Fresh Fare",
+                    "description": "Order Payment",
+                    "image": "./img/logo.png",
+                    "handler": function (response) {
+                        // On successful payment → save order
+                        fetch("database.php?action=save_order", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                payment_mode: "razorpay",
+                                payment_id: response.razorpay_payment_id, // ✅ send payment id
+                                cart: cart
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                localStorage.setItem("latest_order_id", data.order_id);
+                                localStorage.removeItem("cart");
+                                window.location.href = "order_summary";
+                            } else {
+                                displayAlert("Failed to place order: " + data.message, "❌");
+                            }
+                        });
+                    },
+                    // 🟢 Prefill with real customer data
+                    "prefill": {
+                        "name": customerName,
+                        "email": customerEmail,
+                        "contact": customerContact
+                    }, 
+                    "notes": {
+                        "address": "Razorpay Corporate Office"
+                    },
+                    "theme": {
+                        "color": "#3399cc"
+                    }
+                };
+
+                const rzp1 = new Razorpay(options);
+                rzp1.open();
+            }
         });
     </script>
+
     <script>
         // Redirect if not logged in
         function checkLoginBeforeCheckout() {

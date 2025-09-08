@@ -233,6 +233,9 @@ if (isset($_SESSION['user']))
                                         </label>
                                     </div> -->
                                     <a href="./payment" class="primary-btn">PROCEED TO PAYMENT</a>
+                                    <!-- <button id="rzp-button" class="primary-btn">Pay</button> -->
+                                    <!-- rzp_test_REdqBq8LXx9zXU -->
+                                     <!-- UMnQ9V7E4ebwRMssI8LrTsS7 -->
                                 </div>
                             </div>
                         </div>

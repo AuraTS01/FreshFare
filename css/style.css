@@ -4228,3 +4228,27 @@ ol {
     font-size: 14px;
     padding: 3px 0;
 }
+
+.popup {
+        background: #fff;
+        padding: 20px 30px;
+        border-radius: 10px;
+        text-align: center;
+        width: 300px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .popup h4 {
+        margin: 10px 0;
+    }
+    .popup button {
+        margin-top: 15px;
+        padding: 8px 20px;
+        background: #28a745;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    .popup button:hover {
+        background: #218838;
+    }

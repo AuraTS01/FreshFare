@@ -19,56 +19,48 @@ if (isset($_SESSION['user']))
     {
 
 ?>
-    
+   
     
     <div class="container payment-container">
         <h3 class="text-center mb-4">Payment Options</h3>
 
         <form id="paymentForm">
+            <!-- Razorpay -->
             <div class="form-check payment-option">
-                <input class="form-check-input" type="radio" name="paymentMethod" id="cardOption" value="card" >
-                <label class="form-check-label" for="cardOption">
-                Credit/Debit Card
+                <input class="form-check-input" type="radio" name="paymentMethod" id="razorpayOption" value="razorpay">
+                <label class="form-check-label" for="razorpayOption">
+                    Pay Online (UPI / Card / Netbanking / Wallet)
                 </label>
             </div>
-
-            <div class="form-check payment-option">
-                <input class="form-check-input" type="radio" name="paymentMethod" id="upiOption" value="upi">
-                <label class="form-check-label" for="upiOption">
-                UPI
-                </label>
-            </div>
-
-            <div class="form-check payment-option">
-                <input class="form-check-input" type="radio" name="paymentMethod" id="codOption" value="cod" checked>
+            
+            <!-- COD -->
+            <div class="form-check payment-option mt-2">
+                <input class="form-check-input" type="radio" name="paymentMethod" id="codOption" value="cod" >
                 <label class="form-check-label" for="codOption">
                     Pay on Delivery
-                </label>    
+                </label>
             </div>
-            </br>
-            <div id="codSection" class="alert alert-success mt-3">
+
+            <div id="codSection" class="alert alert-success mt-3 d-none">
                 You’ve selected <strong>Pay on Delivery</strong>. Please keep the amount ready when your order arrives.
             </div>
-            <!-- Card Form -->
-            <div id="devNotice" class="alert alert-warning mt-3 d-none">
-                This payment method is under development. Please choose <strong>Pay on Delivery</strong>.
+
+            <div id="devNotice" class="alert alert-success mt-3 d-none">
+                You’ve selected <strong>Online Payment</strong>. Complete the payment securely with Razorpay.
             </div>
 
-            <!-- UPI Form -->
-            <div id="upiForm" class="hidden">
-                <div class="mb-3">
-                    <label for="upiId" class="form-label">UPI ID</label>
-                    <input type="text" class="form-control" id="upiId" placeholder="example@upi">
-                </div>
-            </div>
-
-            <!-- COD Info -->
-            <div id="codInfo" class="alert alert-info hidden">
-            You have selected <strong>Pay on Delivery</strong>. No need to enter payment info.
-            </div>
-
-            <button type="submit" id="checkoutBtn" name="checkoutBtn" class="btn btn-success w-100">Place Order</button>
+            <button type="submit" id="checkoutBtn" name="checkoutBtn" class="btn btn-success w-100 mt-3">Place Order</button>
         </form>
+        
+
+    </div>
+    <div class="overlay" id="alertBox" style="display:none;">
+        <div class="popup">
+            <div id="iconBox">⚠️</div>
+            <h4>Notification</h4>
+            <p id="alertMessage"></p>
+            <button onclick="closePopup()">OK</button>
+        </div>
     </div>
 <?php 
     include("./footer.php");
@@ -78,3 +70,7 @@ if (isset($_SESSION['user']))
   header("Location:./index"); 
   }
 ?>
+
+<!-- 
+Live Key Id = "rzp_live_RF78uExNtRB1Cq"
+Live Secret Key = "cGlUHKXS6Q1g3njRzE3jCkDY" -->
