@@ -49,7 +49,7 @@ if (isset($_SESSION['user']))
                 You’ve selected <strong>Online Payment</strong>. Complete the payment securely with Razorpay.
             </div>
 
-            <button type="submit" id="checkoutBtn" name="checkoutBtn" class="btn btn-success w-100 mt-3">Place Order</button>
+            <button type="submit"  class="btn btn-success w-100 mt-3">Place Order</button>
         </form>
         
 

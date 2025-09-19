@@ -41,7 +41,7 @@ if (isset($_SESSION['user']))
         // Orders Packed
         $sqlPacked = "SELECT COUNT(*) AS packed_orders, SUM(total_price) AS packed_income 
                       FROM orders 
-                      WHERE status In ('disptached') AND company_id='$companyId'";
+                      WHERE status ='dispatched' AND company_id='$companyId'";
         $packedData = $login_db->query($sqlPacked)->fetch_assoc();
         $packedOrders = $packedData['packed_orders'] ?? 0;
         $packedIncome = $packedData['packed_income'] ?? 0;

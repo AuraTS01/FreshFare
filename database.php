@@ -26,7 +26,11 @@ function showAlert($msg){
                 </div>
             </div>';
 }
-
+if (!function_exists('showAlert')) {
+    function showAlert($msg) {
+        echo "<script>alert('" . addslashes($msg) . "');</script>";
+    }
+}
 
 // include('./database.php');
 
@@ -71,108 +75,74 @@ if (isset($_POST['signup_submit'])) {
 
 
 
-if(isset($_POST['login'])){
+if (isset($_POST['login'])) {
     $email = $_POST['email'];
     $pass = $_POST['password'];
     $hashedPassword = md5($pass);
 
-    if($email!=""){
+    if ($email != "") {
         $check_sql = "SELECT * FROM `fresh_fare_signup` WHERE `email` = '$email'";
-        $check_result=mysqli_query($login_db,$check_sql);
-        if(mysqli_num_rows($check_result)==0){
+        $check_result = mysqli_query($login_db, $check_sql);
+
+        if (mysqli_num_rows($check_result) == 0) {
             header("Location:index?err=Email does not exist with Database");
-        }
-        else{
+            exit;
+        } else {
             $sql = "SELECT * FROM `fresh_fare_signup` WHERE `email` = '$email' AND `password`= '$hashedPassword'";
-            $result = mysqli_query($login_db,$sql);
+            $result = mysqli_query($login_db, $sql);
             $row = mysqli_fetch_array($result);
-            if($row!=0){
-                if(($_SESSION['user']) && ($row['access']==1)){
-                    if($row['category'] === 'sup_admin' ){
-                        $_SESSION['username'] = $row['username'];
-                         //echo $_SESSION['name'];
-                        $_SESSION['email'] = $row['email'];
-                        $_SESSION['id'] = $row['id'];
-                        $_SESSION['mob_num'] = $row['mob_num'];
-                        $_SESSION['password'] = $row['password'];
-                        //echo $_SESSION['email'];
-                        $_SESSION['last_login_timestamp'] = time();
-                        $_SESSION['Address_1'] = $row['Address_1'];
-                        $_SESSION['Address_2'] = $row['Address_2'];
-                        $_SESSION['town'] = $row['town'];
-                        $_SESSION['state'] = $row['state'];
-                        $_SESSION['zipCode'] = $row['zipCode'];
-                        //echo $_SESSION['last_login_timestamp'];
-                        
+
+            if ($row) {
+                if ($row['access'] == 1) {
+
+                    // ✅ Store common session data
+                    $_SESSION['user'] = true;
+                    $_SESSION['username'] = $row['username'];
+                    $_SESSION['email'] = $row['email'];
+                    $_SESSION['id'] = $row['id'];
+                    $_SESSION['mob_num'] = $row['mob_num'];
+                    $_SESSION['password'] = $row['password'];
+                    $_SESSION['last_login_timestamp'] = time();
+                    $_SESSION['Address_1'] = $row['Address_1'];
+                    $_SESSION['Address_2'] = $row['Address_2'];
+                    $_SESSION['town'] = $row['town'];
+                    $_SESSION['state'] = $row['state'];
+                    $_SESSION['zipCode'] = $row['zipCode'];
+
+                    // ✅ Check for saved redirect first (IMPORTANT: before dashboards)
+                    if (isset($_SESSION['postLoginRedirect'])) {
+                        $redirect = $_SESSION['postLoginRedirect'];
+                        unset($_SESSION['postLoginRedirect']); // clear after use
+                        header("Location: $redirect");
+                        exit;
+                    }
+
+                    // ✅ Otherwise, fallback to role-based dashboards
+                    if ($row['category'] === 'sup_admin') {
                         header("Location:./adm_dashboard");
-                    }else if ($row['category'] === 'company' ){
-                        $_SESSION['username'] = $row['username'];
-                         //echo $_SESSION['name'];
-                        $_SESSION['email'] = $row['email'];
-                        $_SESSION['id'] = $row['id'];
-                        $_SESSION['mob_num'] = $row['mob_num'];
-                        $_SESSION['password'] = $row['password'];
-                        //echo $_SESSION['email'];
-                        $_SESSION['last_login_timestamp'] = time();
-                        $_SESSION['Address_1'] = $row['Address_1'];
-                        $_SESSION['Address_2'] = $row['Address_2'];
-                        $_SESSION['town'] = $row['town'];
-                        $_SESSION['state'] = $row['state'];
-                        $_SESSION['zipCode'] = $row['zipCode'];
-                        //echo $_SESSION['last_login_timestamp'];
-                        
+                    } elseif ($row['category'] === 'company') {
                         header("Location:./com_dashboard");
-
-                    }else if ($row['category'] === 'customer' ){
-                        $_SESSION['username'] = $row['username'];
-                         //echo $_SESSION['name'];
-                        $_SESSION['email'] = $row['email'];
-                        $_SESSION['id'] = $row['id'];
-                        $_SESSION['mob_num'] = $row['mob_num'];
-                        $_SESSION['password'] = $row['password'];
-                        //echo $_SESSION['email'];
-                        $_SESSION['last_login_timestamp'] = time();
-                        $_SESSION['Address_1'] = $row['Address_1'];
-                        $_SESSION['Address_2'] = $row['Address_2'];
-                        $_SESSION['town'] = $row['town'];
-                        $_SESSION['state'] = $row['state'];
-                        $_SESSION['zipCode'] = $row['zipCode'];
-                        //echo $_SESSION['last_login_timestamp'];
-                        
+                    } elseif ($row['category'] === 'customer') {
                         header("Location:./dashboard");
-
-                    }else if ($row['category'] === 'delivery_agent' ){
-                        $_SESSION['username'] = $row['username'];
-                         //echo $_SESSION['name'];
-                        $_SESSION['email'] = $row['email'];
-                        $_SESSION['id'] = $row['id'];
-                        $_SESSION['mob_num'] = $row['mob_num'];
-                        $_SESSION['password'] = $row['password'];
-                        //echo $_SESSION['email'];
-                        $_SESSION['last_login_timestamp'] = time();
-                        $_SESSION['Address_1'] = $row['Address_1'];
-                        $_SESSION['Address_2'] = $row['Address_2'];
-                        $_SESSION['town'] = $row['town'];
-                        $_SESSION['state'] = $row['state'];
-                        $_SESSION['zipCode'] = $row['zipCode'];
-                        //echo $_SESSION['last_login_timestamp'];
-                        
+                    } elseif ($row['category'] === 'delivery_agent') {
                         header("Location:./deli_dashboard");
+                    } else {
+                        header("Location:index?err=No Category. Please Contact Admin +91 9042281069");
+                    }
+                    exit;
 
-                    }else{
-                        header("Location:index?err=No Category.Please Contact Admin +91 9042281069");
-                    } 
-                    
-                                      
-                }else{
-                        header("Location:index?err=Access Denied");
-                } 
-            }else{
+                } else {
+                    header("Location:index?err=Access Denied");
+                    exit;
+                }
+            } else {
                 header("Location:index?err=Email or Password is incorrect");
+                exit;
             }
-        }//end else
+        }
     }
-}//ENd login billingAddressSave
+}
+
 
 
 
@@ -193,7 +163,7 @@ if(isset($_POST['billingAddressSave'])){
     // Check if ZIP code is valid
     if(!in_array($zipCode, $validPincodes)){
         // showAlert("Please choose a valid location Pincode. (We Serve only for Karamadai and Mettupalayam Location)");
-        header("Location:checkout?err=Please choose a valid location Pincode. (We Serve only for Karamadai and Mettupalayam Location");
+        header("Location:checkout?err=Please choose a valid location Pincode. Our Service is enabled only for Karamadai and Mettupalayam Locations");
     } else {
         // ZIP is valid, proceed to update
         if($Address_2 != ""){
@@ -251,10 +221,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
 
     // ✅ Calculate total price
     $total = 0;
-    foreach ($cart as $item) {
-        $price = isset($item['price']) ? (float)$item['price'] : 0;
-        $quantity = isset($item['quantity']) ? (float)$item['quantity'] : 0;
-        $total += $price * $quantity;
+    if (isset($data['total_amount'])) {
+        $total = (float)$data['total_amount'];
+    } else {
+        // Fallback: calculate from cart
+        $total = 0;
+        foreach ($cart as $item) {
+            $price = isset($item['price']) ? (float)$item['price'] : 0;
+            $quantity = isset($item['quantity']) ? (float)$item['quantity'] : 0;
+            $total += $price * $quantity;
+        }
     }
 
     // ✅ Get customer ID
@@ -505,8 +481,13 @@ if (isset($_POST['update_order']) && isset($_POST['order_id']) && isset($_POST['
 
 
 if (isset($_POST['fetch_orders'])) {
+
+    $company_id = isset($_POST['company_id']) ? intval($_POST['company_id']) : 0;
+
+    
+    // error_log("Company ID received: " . $company_id);
     $sql = "
-        SELECT 
+            SELECT 
             o.id AS order_id,
             o.order_code,
             o.order_date,
@@ -525,11 +506,13 @@ if (isset($_POST['fetch_orders'])) {
         JOIN fresh_fare_signup c ON c.id = o.customer_id
         JOIN order_items oi ON oi.order_id = o.id
         LEFT JOIN item_price ip ON ip.company_id = oi.company_id
-        WHERE o.status = 'pending' OR o.status = 'acknowledged'
+        WHERE (o.status IN ('pending','acknowledged'))
+        AND oi.company_id = $company_id
         ORDER BY o.order_date DESC, o.id DESC
     ";
-    $res = $login_db->query($sql);
 
+    $res = $login_db->query($sql);
+     
     // ✅ function to normalize item names
     function normalizeItem($name) {
         $name = strtolower(trim($name));
@@ -549,7 +532,7 @@ if (isset($_POST['fetch_orders'])) {
 
         return null; // no match
     }
-
+    
     $orders = [];
     if ($res && $res->num_rows) {
         while ($r = $res->fetch_assoc()) {
@@ -595,10 +578,13 @@ if (isset($_POST['fetch_orders'])) {
     }
 
     echo json_encode(array_values($orders));
+    exit;
 }
 
 
 if (isset($_POST['fetch_dispatched'])) {
+    $company_id = isset($_POST['company_id']) ? intval($_POST['company_id']) : 0;
+
     $sql = "
         SELECT 
             o.id AS order_id,
@@ -619,9 +605,11 @@ if (isset($_POST['fetch_dispatched'])) {
         JOIN fresh_fare_signup c ON c.id = o.customer_id
         JOIN order_items oi ON oi.order_id = o.id
         LEFT JOIN item_price ip ON ip.company_id = oi.company_id
-        WHERE o.status = 'dispatched'
+        WHERE o.status = 'dispatched' 
+        AND oi.company_id = $company_id
         ORDER BY o.order_date DESC, o.id DESC
     ";
+
     $res = $login_db->query($sql);
 
     // ✅ function to normalize item names
@@ -689,6 +677,7 @@ if (isset($_POST['fetch_dispatched'])) {
     }
 
     echo json_encode(array_values($orders));
+    exit;
 }
 
 

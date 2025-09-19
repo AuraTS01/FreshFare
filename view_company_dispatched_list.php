@@ -11,11 +11,17 @@ if (isset($_SESSION['user'])) {
         $no = mysqli_fetch_array($result);
 
         if ($no!=0) {
+            $companySql = "SELECT company_id FROM company_registration WHERE email='" . $no['email'] . "'";
+            $companyRes = mysqli_query($login_db, $companySql);
+            $company = mysqli_fetch_assoc($companyRes);
+            $companyId_1 = $company ? $company['company_id'] : 0;
             
 ?>
 
             <div class="container mt-4">
                 <h3 class="text-center">📦 Dispatched Orders</h3>
+                <!-- ✅ Hidden input to pass company_id to JS -->
+                <input type="hidden" id="companyId" value="<?php echo $companyId_1; ?>">
                 <div class="table-responsive">
                     <table id="dispatchedTable" class="table table-striped table-bordered">
                         <thead class="table-dark">

@@ -115,13 +115,55 @@ if (isset($_SESSION['user']))
                             </div>
                         </div>
                     </div>
-                    <div class="hero__item set-bg" data-setbg="img/hero/chicken_2.jpg">
-                        <div class="hero__text">
-                            <span>FRESH Meat</span>
-                            <h2>Chicken <br />100% Fresh</h2>
-                            <h5>Free Pickup and Delivery Available</h5></br>
-                            <a href="#targetSection" class="primary-btn">SHOP NOW</a>
+                    <div class="swiper hero-slider">
+                        <div class="swiper-wrapper">
+
+                            <div class="swiper-slide">
+                                <img src="img/hero/offer.png" alt="SAVE25 Offer">
+                            </div>
+
+
+                            <!-- Slide 1 -->
+                            <div class="swiper-slide">
+                                <div class="hero__item set-bg" data-setbg="img/hero/chicken_2.jpg">
+                                    <div class="hero__text">
+                                        <span>FRESH Meat</span>
+                                        <h2>Chicken <br />100% Fresh</h2>
+                                        <h5>Free Pickup and Delivery Available</h5></br>
+                                        <a href="#targetSection" class="primary-btn">SHOP NOW</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Slide 2 -->
+                            <div class="swiper-slide">
+                                <div class="hero__item set-bg" data-setbg="img/hero/mutton.jpg">
+                                    <div class="hero__text">
+                                        <span>PREMIUM Meat</span>
+                                        <h2 style="color: white;">Mutton <br />Fresh Cuts</h2>
+                                        <h5 style="color: white;">Home Delivery Guaranteed</h5></br>
+                                        <a href="#targetSection" class="primary-btn">SHOP NOW</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Slide 3 -->
+                            <div class="swiper-slide">
+                                <div class="hero__item set-bg" data-setbg="img/hero/fish.jpeg">
+                                    <div class="hero__text">
+                                        <span style="color: white;">SEAFOOD</span>
+                                        <h2 >Fish & Prawns</h2>
+                                        <h5 style="color: white;">Delivered Fresh Daily</h5></br>
+                                        <a href="#targetSection" class="primary-btn">SHOP NOW</a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- ✅ Pagination & Navigation -->
+                        <div class="swiper-pagination"></div>
+                        <div class="swiper-button-prev"></div>
+                        <div class="swiper-button-next"></div>
                     </div>
                 </div>
             </div>
@@ -273,43 +315,72 @@ if (isset($_SESSION['user']))
                                 $companyName = htmlspecialchars($row['company_name']);
                                 $address     = htmlspecialchars($row['email']);
 
-                                // Check if logo exists
-                                if (!empty($row['logo']) && file_exists("./uploads/company_logos/" . $row['logo'])) {
-                                    $logo_html = '<img src="./uploads/company_logos/' . htmlspecialchars($row['logo']) . '" alt="' . $companyName . '" class="company-logo">';
-                                } else {
-                                    // If no logo, show initials
-                                    $words = explode(' ', $companyName);
-                                    $initials = '';
-                                    
-                                    if(count($words) >= 2){
-                                        $initials = strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
-                                    } else {
-                                        // If single word, take first two letters
-                                        $initials = strtoupper(substr($words[0], 0, 2));
+                                    // ---------- Logo Handling ----------
+                                    $extensions = ['png', 'jpg', 'jpeg', 'gif'];
+                                    $logoPath = '';
+
+                                    foreach ($extensions as $ext) {
+                                        $file = "./img/company_logos/{$companyName}.{$ext}";
+                                        if (file_exists($file)) {
+                                            $logoPath = $file;
+                                            break;
+                                        }
                                     }
-                                    
-                                    $logo_html = '<div class="company-placeholder">' . $initials . '</div>';
-                                }
+
+                                    $hasLogo = !empty($logoPath);
+
+                                    if ($hasLogo) {
+                                        // Logo exists
+                                        $logo_html = '<div class="logo-container position-relative text-center">
+                                                        <img src="' . htmlspecialchars($logoPath) . '" 
+                                                            alt="' . htmlspecialchars($companyName) . '" 
+                                                            class="company-logo" 
+                                                            style="width:200px; height:200px; object-fit:contain; border:2px solid #ccc; border-radius:12px;">
+                                                        <button class="btn btn-primary view-btn" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#companyModal' . $companyId . '">
+                                                            View Products
+                                                        </button>
+                                                    </div>';
+                                    } else {
+                                        // No logo: display initials placeholder
+                                        $words = explode(' ', $companyName);
+                                        if (count($words) >= 2) {
+                                            $initials = strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
+                                        } else {
+                                            $initials = strtoupper(substr($words[0], 0, 2));
+                                        }
+
+                                        $logo_html = '<div class="logo-container position-relative text-center">
+                                                        <div class="company-placeholder d-flex align-items-center justify-content-center" 
+                                                            style="width:200px; height:200px; background:#ccc; color:#fff; font-weight:bold; font-size:64px; border-radius:12px;">
+                                                            ' . $initials . '
+                                                        </div>
+                                                        <button class="btn btn-primary view-btn" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#companyModal' . $companyId . '">
+                                                            View Products
+                                                        </button>
+                                                    </div>';
+                                    }
 
 
-                                // 1) Split top-level items safely
+                                // ---------- Items & Prices ----------
                                 $topLevelItems = splitTopLevelItems($row['selling_items']);
-
-                                // 2) Expand variants and build products with prices
                                 $products = [];
+
                                 foreach ($topLevelItems as $it) {
                                     foreach (expandItem($it) as $fullName) {
-                                        $name  = trim(preg_replace('/\s+/', ' ', str_replace([ '(', ')', ',' ], '', $fullName)));
-                                        // Safety: if someone typed only "With Skin" or "Without Skin", prepend "Chicken"
+                                        $name = trim(preg_replace('/\s+/', ' ', str_replace(['(',')',','], '', $fullName)));
                                         if (preg_match('/^(with skin|without skin)$/i', $name)) {
                                             $name = 'Chicken ' . $name;
                                         }
                                         $price = mapPrice($name, $row);
-                                        $products[] = [ 'name' => $name, 'price' => $price ];
+                                        $products[] = ['name'=>$name, 'price'=>$price];
                                     }
                                 }
 
-                                // 3) Deduplicate by name (case-insensitive)
+                                // Deduplicate products by name
                                 $unique = [];
                                 foreach ($products as $p) {
                                     $key = strtolower($p['name']);
@@ -321,31 +392,41 @@ if (isset($_SESSION['user']))
                             <!-- Company Card -->
                             <div class="col-lg-3 col-md-4 col-sm-6 mix companies">
                                 <div class="featured__item">
-                                    <div class="featured__item__pic set-bg" >
-                                        <div class="company-item">
-                                            <?php echo $logo_html; ?>
-                                            <div class="company-info">
-                                                <h5><?php echo $companyName; ?></h5>
-                                                <p><?php echo $address; ?></p>
-                                            </div>
-                                        </div>
+                                    <div class="featured__item__pic set-bg position-relative text-center">
+                                        <?php 
+                                        if ($hasLogo) {
+                                            // Show logo
+                                            echo '<img src="' . htmlspecialchars($logoPath) . '" alt="' . htmlspecialchars($companyName) . '" 
+                                                        class="company-logo" 
+                                                        style="width:200px; height:200px; object-fit:contain; border-radius:12px;">';
+                                        } else {
+                                            // Show initials placeholder
+                                            echo '<div class="company-placeholder d-flex align-items-center justify-content-center" 
+                                                        style="width:200px; height:200px; background:#ccc; color:#fff; font-weight:bold; font-size:64px; border-radius:12px;">
+                                                    ' . $initials . '
+                                                </div>';
+                                        }
+                                        ?>
+
+                                        <!-- Hover animation button (reuse your existing structure) -->
                                         <ul class="featured__item__pic__hover">
                                             <li>
-                                                <button class="btn btn-primary"
-                                                        data-bs-toggle="modal"
+                                                <button class="btn btn-primary" 
+                                                        data-bs-toggle="modal" 
                                                         data-bs-target="#companyModal<?php echo $companyId; ?>">
                                                     View Products
                                                 </button>
                                             </li>
                                         </ul>
                                     </div>
-                                    <div class="featured__item__text">
-                                        <h6>
-                                            <a href="#" data-bs-toggle="modal" data-bs-target="#companyModal<?php echo $companyId; ?>">
-                                                <?php echo $companyName; ?>
-                                            </a>
-                                        </h6>
-                                        <p><?php echo $address; ?></p>
+
+                                    <!-- Show company info always below the logo -->
+                                    <div class="company-info mt-2 text-center">
+                                        <h5><?php echo htmlspecialchars($companyName); ?></h5>
+                                        <p><?php echo htmlspecialchars($address); ?></p>
+                                        <?php if (!empty($row['phone'])): ?>
+                                            <p><?php echo htmlspecialchars($row['phone']); ?></p>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -363,53 +444,69 @@ if (isset($_SESSION['user']))
                                             <div class="row g-3">
                                                 
                                                 <?php 
-                                                foreach ($uniqueItems as $product) {
-                                                    $productName = htmlspecialchars($product['name']);
-                                                    $basePrice   = (float)$product['price'];
+                                                    foreach ($uniqueItems as $product) {
+                                                        $productName = htmlspecialchars($product['name']);
+                                                        $basePrice   = (float)$product['price'];
 
-                                                    // Check if price is set
-                                                    if ($basePrice <= 0) {
-                                                        $priceText = '<span class="text-muted">Price not set</span>';
-                                                        $disableBtn = 'disabled';
-                                                    } else {
-                                                        $price = getAdjustedPrice($basePrice);
-                                                        $priceText = '₹' . number_format($price, 2) . ' / KG';
-                                                        $disableBtn = '';
+                                                        // Determine price
+                                                        if ($basePrice <= 0) {
+                                                            $priceText = '<span class="text-muted">Price not set</span>';
+                                                            $disableBtn = 'disabled';
+                                                        } else {
+                                                            $price = getAdjustedPrice($basePrice);
+                                                            $priceText = '₹' . number_format($price, 2) . ' / KG';
+                                                            $disableBtn = '';
+                                                        }
+
+                                                        // Image mapping
+                                                        $imgMap = [
+                                                            'chicken with skin'    => 'img/featured/chicken_flesh.jpg',
+                                                            'chicken without skin' => 'img/featured/chicken_withoutSkin.jpg',
+                                                            'chicken'              => 'img/featured/chicken_flesh.jpg',
+                                                            'mutton boti'          => 'img/featured/mutton_boti.jpeg',
+                                                            'mutton liver'         => 'img/featured/mutton_liver.jpg',
+                                                            'mutton'               => 'img/featured/mutton.jpg',
+                                                            'fish'                 => 'img/featured/fish.jpeg',
+                                                            'prawn'                => 'img/featured/prawns.jpg',
+                                                            'kadai'                => 'img/featured/kadai.jpeg',
+                                                            'beef boti'            => 'img/featured/beef_boti.jpg',
+                                                            'beef liver'           => 'img/featured/beef_liver.jpg',
+                                                            'beef'                 => 'img/featured/beef.jpg',
+                                                            'duck'                 => 'img/featured/duck.jpg',
+                                                        ];
+
+                                                        $ln = strtolower($productName);
+                                                        $image = 'img/featured/default.jpg'; // fallback
+
+                                                        foreach ($imgMap as $key => $path) {
+                                                            if (strpos($ln, $key) !== false) {
+                                                                $image = $path;
+                                                                break;
+                                                            }
+                                                        }
+
+                                                        echo '<div class="col-12 col-sm-6 col-lg-4">
+                                                                <div class="featured__item h-100">
+                                                                    <div class="featured__item__pic set-bg" data-setbg="' . $image . '">
+                                                                        <ul class="featured__item__pic__hover">
+                                                                            <li>
+                                                                                <button class="btn btn-success btn-sm" ' . $disableBtn . ' 
+                                                                                    onclick="addToCart(this, \'' . addslashes($productName) . '\', ' . ($basePrice > 0 ? $price : 0) . ', ' . $row['company_id'] . ')"
+                                                                                    data-product-name="' . htmlspecialchars($productName, ENT_QUOTES) . '"
+                                                                                    data-company-id="' . $row['company_id'] . '">
+                                                                                    <i class="fa fa-shopping-cart"></i> Add to Cart
+                                                                                </button>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </div>
+                                                                    <div class="featured__item__text text-center">
+                                                                        <h6 class="mt-2"><a href="#">' . htmlspecialchars($productName, ENT_QUOTES) . '</a></h6>
+                                                                        <h5>' . $priceText . '</h5>
+                                                                    </div>
+                                                                </div>
+                                                            </div>';
                                                     }
-
-                                                    // Image mapping
-                                                    $image = "img/featured/default.jpg";
-                                                    $ln = strtolower($productName);
-                                                    if (strpos($ln, "chicken with skin") !== false) $image = "img/featured/chicken_flesh.jpg";
-                                                    elseif (strpos($ln, "chicken without skin") !== false) $image = "img/featured/chicken_withoutSkin.jpg";
-                                                    elseif (strpos($ln, "mutton boti") !== false) $image = "img/featured/mutton.jpg";
-                                                    elseif (strpos($ln, "mutton liver") !== false) $image = "img/featured/mutton.jpg";
-                                                    elseif (strpos($ln, "fish") !== false) $image = "img/featured/fish.jpeg";
-                                                    elseif (strpos($ln, "prawn") !== false) $image = "img/featured/prawns.jpg";
-                                                    elseif (strpos($ln, "kadai") !== false) $image = "img/featured/kadai.jpeg";
-                                                    elseif (strpos($ln, "beef boti") !== false) $image = "img/featured/beef_boti.jpg";
-                                                    elseif (strpos($ln, "beef liver") !== false) $image = "img/featured/beef_liver.jpg";
-
-                                                    echo '<div class="col-12 col-sm-6 col-lg-4">
-                                                            <div class="featured__item h-100">
-                                                                <div class="featured__item__pic set-bg" style="background-image:url(' . $image . '); background-size: cover; background-position: center;">
-                                                                    <ul class="featured__item__pic__hover">
-                                                                        <li>
-                                                                            <button class="btn btn-success btn-sm" ' . $disableBtn . '
-                                                                                onclick="addToCart(this, \'' . $productName . '\', ' . ($basePrice > 0 ? $price : 0) . ', ' . $row['company_id'] . ')">
-                                                                                <i class="fa fa-shopping-cart"></i> Add to Cart
-                                                                            </button>
-                                                                        </li>
-                                                                    </ul>
-                                                                </div>
-                                                                <div class="featured__item__text text-center">
-                                                                    <h6 class="mt-2"><a href="#">' . $productName . '</a></h6>
-                                                                    <h5>' . $priceText . '</h5>
-                                                                </div>
-                                                            </div>
-                                                        </div>';
-                                                }
-?>
+                                                ?>
                                             </div>
                                         </div>
                                         <div class="modal-footer">

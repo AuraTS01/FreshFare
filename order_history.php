@@ -4,6 +4,7 @@ include('./header.php');
 if (isset($_SESSION['user'])) {
     if ((time() - $_SESSION['last_login_timestamp']) > 600) {  
         header("Location:logout.php");  
+        exit;
     } else {  
         $_SESSION['last_login_timestamp'] = time();  
 
@@ -46,7 +47,7 @@ if (isset($_SESSION['user'])) {
             }
 
             $statusLabels = [
-                'pending'     => 'pending',
+                'pending'     => 'Pending',
                 'acknowledged' => 'Acknowledged',
                 'picked'   => 'Picked Up',
                 'dispatched'  => 'Dispatched',
@@ -62,49 +63,55 @@ if (isset($_SESSION['user'])) {
             ];
 ?>
 
-            <div class="container mt-4">
-                <h3 class="text-center">Order History</h3>
-                <hr>
+<div class="container mt-4">
+    <h3 class="text-center">Order History</h3>
+    <hr>
 
-                <?php if (!empty($orders)): ?>
-                    <?php foreach ($orders as $order): ?>
-                        <?php 
-                            $status = strtolower($order['status']);
-                            $statusText = $statusLabels[$status] ?? ucfirst($status);
-                            $statusClass = $statusColors[$status] ?? "badge bg-secondary";
-                        ?>
-                        <div class="order-card">
-                            <div class="order-header">Order #<?= htmlspecialchars($order['order_code']); ?></div>
-                            <div class="order-meta">
-                                <strong>Date:</strong> <?= htmlspecialchars($order['order_date']); ?><br>
-                                <strong>Status:</strong> <span class="<?= $statusClass ?>"><?= $statusText ?></span><br>
-                                <strong>Payment Mode:</strong> <?= htmlspecialchars($order['payment_mode']); ?><br>
-                                <strong>Total Paid:</strong> ₹<?= number_format((float)$order['total_price'], 2); ?>
-                            </div>
-                            <div class="order-items">
-                                <strong>Items:</strong>
-                                <ul>
-                                    <?php foreach ($order['items'] as $it): ?>
-                                        <li>
-                                            <?= htmlspecialchars($it['item_name']); ?> × <?= (float)$it['quantity']; ?> <?= htmlspecialchars($it['unit']); ?>
-                                            (₹<?= number_format((float)$it['price'], 2); ?> each)
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <p>No orders found.</p>
-                <?php endif; ?>
+    <?php if (!empty($orders)): ?>
+        <?php foreach ($orders as $order): ?>
+            <?php 
+                $status = strtolower($order['status']);
+                $statusText = $statusLabels[$status] ?? ucfirst($status);
+                $statusClass = $statusColors[$status] ?? "badge bg-secondary";
+            ?>
+            <div class="order-card mb-4 p-3 border rounded shadow-sm">
+                <div class="order-header mb-2"><strong>Order #<?= htmlspecialchars($order['order_code']); ?></strong></div>
+                <div class="order-meta mb-2">
+                    <strong>Date:</strong> <?= htmlspecialchars($order['order_date']); ?><br>
+                    <strong>Status:</strong> <span class="<?= $statusClass ?>"><?= $statusText ?></span><br>
+                    <strong>Payment Mode:</strong> <?= htmlspecialchars($order['payment_mode']); ?><br>
+
+                    <?php if (strtolower($order['payment_mode']) === 'cod'): ?>
+                        <strong>Total to be Paid:</strong> 
+                        <span class="badge bg-warning text-dark">₹<?= number_format((float)$order['total_price'], 2); ?></span>
+                    <?php else: ?>
+                        <strong>Total Paid:</strong> ₹<?= number_format((float)$order['total_price'], 2); ?>
+                    <?php endif; ?>
+                </div>
+                <div class="order-items">
+                    <strong>Items:</strong>
+                    <ul class="list-group mt-1">
+                        <?php foreach ($order['items'] as $it): ?>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <?= htmlspecialchars($it['item_name']); ?> × <?= (float)$it['quantity']; ?> <?= htmlspecialchars($it['unit']); ?>
+                                <span>₹<?= number_format((float)$it['price'], 2); ?> each</span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
             </div>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <p>No orders found.</p>
+    <?php endif; ?>
+</div>
 
-            
 <?php 
         }
         include("./footer.php");
     }
 } else { 
-  header("Location:./index"); 
+    header("Location:./index"); 
+    exit;
 } 
 ?>

@@ -13,7 +13,11 @@ if (isset($_SESSION['user'])) {
         if ($no!=0) {
             // ✅ Fetch all pending orders
             
-
+             // ✅ Fetch company_id from company_registration table
+            $companySql = "SELECT company_id FROM company_registration WHERE email='" . $no['email'] . "'";
+            $companyRes = mysqli_query($login_db, $companySql);
+            $company = mysqli_fetch_assoc($companyRes);
+            $companyId = $company ? $company['company_id'] : 0;
             function ff_fmt_dt($dt) {
                 return date("d M Y H:i", strtotime($dt));
             }
@@ -28,7 +32,8 @@ if (isset($_SESSION['user'])) {
             ?>
             <h3 class="text-center">🛒 Live Orders</h3><br>
             <audio id="orderAlert" src="sounds/bell.mp3" preload="auto" loop></audio>
-
+            <!-- ✅ Hidden input to pass company_id to JS -->
+            <input type="hidden" id="companyId" value="<?php echo $companyId; ?>">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover">
                     <thead>
@@ -41,7 +46,9 @@ if (isset($_SESSION['user'])) {
                         <th>Status</th>
                     </tr>
                     </thead>
-                    <tbody id="ordersBody"></tbody>
+                    <tbody id="ordersBody">
+                    
+                    </tbody>
                 </table>
                 <div id="noOrdersMsg" class="text-center text-muted mt-3" style="display:none;">
                     🚫 No Orders as of now

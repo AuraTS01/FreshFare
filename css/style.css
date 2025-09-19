@@ -2216,6 +2216,20 @@ ol {
 .checkout__order .checkout__order__subtotal span {
 	float: right;
 }
+.checkout__order .checkout__order__gst {
+    font-size: 18px;
+    color: #1c1c1c;
+    font-weight: 700;
+    border-bottom: 1px solid #e1e1e1;
+    border-top: 1px solid #e1e1e1;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    padding-top: 15px;
+}
+
+.checkout__order .checkout__order__gst span {
+    float: right;
+}
 
 .checkout__order .checkout__input__checkbox label {
 	padding-left: 20px;
@@ -4230,25 +4244,52 @@ ol {
 }
 
 .popup {
-        background: #fff;
-        padding: 20px 30px;
-        border-radius: 10px;
-        text-align: center;
-        width: 300px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+	background: #fff;
+	padding: 20px 30px;
+	border-radius: 10px;
+	text-align: center;
+	width: 300px;
+	box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.popup h4 {
+	margin: 10px 0;
+}
+.popup button {
+	margin-top: 15px;
+	padding: 8px 20px;
+	background: #28a745;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+}
+.popup button:hover {
+	background: #218838;
+}
+
+@media (max-width: 480px) {
+    .logo-img {
+        height: 35px;          /* shrink image a bit */
+        margin-right: 8px;     /* reduce gap */
     }
-    .popup h4 {
-        margin: 10px 0;
+
+    .logo-text {
+        font-size: 20px;       /* shrink text */
+        flex-wrap: nowrap;     /* keep in same line */
+        white-space: nowrap;   /* prevent wrapping to next line */
+        overflow: hidden;      /* clip if still too long */
+        text-overflow: ellipsis; /* show ... if too long */
     }
-    .popup button {
-        margin-top: 15px;
-        padding: 8px 20px;
-        background: #28a745;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
+
+    .logo-green, .logo-black {
+        display: inline-block;
     }
-    .popup button:hover {
-        background: #218838;
+
+    .logo-brand {
+        display: flex;
+        align-items: center;
+        flex-direction: row;    /* ensure horizontal layout */
+        gap: 4px;               /* spacing between image and text */
     }
+}
+

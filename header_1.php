@@ -3,35 +3,11 @@ include('./database.php');
 
 
 
-// Initialize variables
-$isLoggedIn = false;
-$category = null;
-
-// Check if user is logged in
-if (isset($_SESSION['user'])) {
-    $isLoggedIn = true;
-
-    // Session timeout: 10 minutes (600 seconds)
-    if ((time() - $_SESSION['last_login_timestamp']) > 600) {
-        // Expired → destroy session and redirect to login
-        session_unset();
-        session_destroy();
-        header("Location: ./login?err=Session expired. Please login again.");
-        exit;
-    }
-
-    // Refresh last login timestamp
-    $_SESSION['last_login_timestamp'] = time();
-
-    // Fetch user category
-    $sql = "SELECT * FROM `fresh_fare_signup` WHERE `email`='" . mysqli_real_escape_string($login_db, $_SESSION['email']) . "' LIMIT 1";
-    $result = mysqli_query($login_db, $sql);
-
-    if ($result && mysqli_num_rows($result) > 0) {
-        $row = mysqli_fetch_assoc($result);
-        $category = $row['category'];
-    }
-}
+$sql = "SELECT * FROM `fresh_fare_signup` ";
+$result = mysqli_query($login_db, $sql);
+$no = mysqli_fetch_array($result);
+if($no != 0) {
+    $category = $no['category'];
 ?>
 
 <!DOCTYPE html>
@@ -122,8 +98,11 @@ if (isset($_SESSION['user'])) {
     }
     </script>
 
-    
+    <script>
+        sessionStorage.clear();
+    </script>
 </head>
+
 
 <body>
 
@@ -136,7 +115,7 @@ if (isset($_SESSION['user'])) {
     <div class="humberger__menu__overlay"></div>
     <div class="humberger__menu__wrapper">
         <div class="header__logo d-flex align-items-center">
-            <a href="./index.php" class="logo-brand d-flex align-items-center text-decoration-none">
+            <a href="#" class="logo-brand d-flex align-items-center text-decoration-none">
                 <img src="img/logo.png" alt="Logo" class="logo-img">
                 <span class="logo-text"><span class="logo-green">F</span><span class="logo-black">resh </span><span class="logo-green">F</span><span class="logo-black">are</span></span>
             </a>
@@ -144,33 +123,19 @@ if (isset($_SESSION['user'])) {
 
         <div class="humberger__menu__widget">
             <div class="header__top__right__auth">
-                <a href="./logout"><i class="fa fa-user"></i> Logout</a>
+                <a href="./login"><i class="fa fa-user"></i> Login</a>
         
                 <ul>
-                     <?php if ($category === 'sup_admin'): ?>
-                        <li><a href="./adm_dashboard">Dashboard</a></li>
-                        <li><a href="./view_companies">View Registered Companies</a></li>
-                        <li><a href="./enroll_company">Enroll New Company</a></li>
-                        <li><a href="./order_list">View Orders List</a></li>
-                    <?php elseif ($category === 'company'): ?>
-                        <li><a href="./com_dashboard">Dashboard</a></li>
-                        <li><a href="./view_company_order_list">View Order List</a></li>
-                        <li><a href="./view_company_dispatched_list">View Dispatched Order List</a></li>
-                        <li><a href="./com_fixPrice">Fix Price for Products</a></li>
-                    <?php elseif ($category === 'delivery_agent'):  ?>
-                        <li><a href="./deli_dashboard">Home</a></li>
-                        <li><a href="./view_undeliveredOrders">View Undelivered /Delivered Orders</a></li>
-                   <?php else: ?>
-                        <li><a href="./dashboard">Home</a></li>
+                    
+                        <li><a href="./index">Home</a></li>
                         <li><a href="./shoping-cart">View Cart</a></li>
-                        <li><a href="./order_history">Order History</a></li>
-                        
-                    <?php endif; ?>
+                        <li><a href="./login">Order History</a></li>
+                    
                 
                 </ul>
                 
             </div>
-            <?php if ($category === 'customer'): ?>
+         
                 <div class="col-lg-3">
                     <div class="header__cart">
                         <ul>
@@ -179,7 +144,7 @@ if (isset($_SESSION['user'])) {
                         <div class="header__cart__price">Cart Price: <span class="cart-total">₹0.00</span></div>
                     </div>
                 </div>
-            <?php endif; ?>    
+           
 
         </div>
          
@@ -208,7 +173,7 @@ if (isset($_SESSION['user'])) {
                     <div class="col-lg-6 col-md-6">
                         <div class="header__top__right">
                             <div class="header__top__right__auth">
-                                <a href="./logout"><i class="fa fa-user"></i> Logout</a>
+                                <a href="./login"><i class="fa fa-user"></i> Login</a>
                             </div>
                         </div>
                     </div>
@@ -220,7 +185,7 @@ if (isset($_SESSION['user'])) {
             <div class="row">
                 <div class="col-lg-3">
                     <div class="header__logo d-flex align-items-center">
-                        <a href="./index.php" class="logo-brand d-flex align-items-center text-decoration-none">
+                        <a href="#" class="logo-brand d-flex align-items-center text-decoration-none">
                             <img src="img/logo.png" alt="Logo" class="logo-img">
                             <span class="logo-text"><span class="logo-green">F</span><span class="logo-black">resh </span><span class="logo-green">F</span><span class="logo-black">are</span></span>
                         </a>
@@ -230,40 +195,28 @@ if (isset($_SESSION['user'])) {
                 <div class="col-lg-6">
                     <nav class="header__menu">
                         <ul>
-                            <?php if ($category === 'sup_admin'): ?>
-                                <li><a href="./adm_dashboard">Dashboard</a></li>
-                                <li><a href="./view_companies">View Registered Companies</a></li>
-                                <li><a href="./enroll_company">Enroll New Company</a></li>
-                                <li><a href="./order_list">View Orders List</a></li>
-                            <?php elseif ($category === 'company'): ?>
-                                <li><a href="./com_dashboard">Dashboard</a></li>
-                                <li><a href="./view_company_order_list">View Order List</a></li>
-                                <li><a href="./view_company_dispatched_list">View Dispatched Order List</a></li>
-                                <li><a href="./com_fixPrice">Fix Price for Products</a></li>
-                            <?php elseif ($category === 'delivery_agent'):  ?>
-                                <li><a href="./deli_dashboard">Home</a></li>
-                                <li><a href="./view_undeliveredOrders">View Undelivered /Delivered Orders</a></li>
-                            <?php else: ?>
-                                <li><a href="./dashboard">Home</a></li>
+                           
+                               
+                                <li><a href="./index">Home</a></li>
                                 <li><a href="./shoping-cart">View Cart</a></li>
-                                <li><a href="./order_history">Order History</a></li>
+                                <li><a href="./login">Order History</a></li>
                                 
-                            <?php endif; ?>
+                           
                             
                         </ul>
                     </nav>
                      
                 </div>
-                <?php if ($category === 'customer'): ?>
-                    <div class="col-lg-3">
-                        <div class="header__cart">
-                            <ul>
-                                <li><a href="./shoping-cart"><i class="fa fa-shopping-bag"></i> <span class="cart-count">0</span></a></li>
-                            </ul>
-                            <div class="header__cart__price">Cart Price: <span class="cart-total">₹0.00</span></div>
-                        </div>
+               
+                <div class="col-lg-3">
+                    <div class="header__cart">
+                        <ul>
+                            <li><a href="./shoping-cart"><i class="fa fa-shopping-bag"></i> <span class="cart-count">0</span></a></li>
+                        </ul>
+                        <div class="header__cart__price">Cart Price: <span class="cart-total">₹0.00</span></div>
                     </div>
-                <?php endif; ?>    
+                </div>
+                
             </div>
            
             <div class="humberger__open">
@@ -285,5 +238,5 @@ if (isset($_SESSION['user'])) {
 <!-- Header End -->
 
 <?php 
-       
+}
 ?>
