@@ -130,6 +130,7 @@ if($no != 0) {
                         <li><a href="./index">Home</a></li>
                         <li><a href="./shoping-cart">View Cart</a></li>
                         <li><a href="./login">Order History</a></li>
+                        <li><a href="./privacypolicy">Privacy Policy</a></li>
                     
                 
                 </ul>
@@ -200,6 +201,7 @@ if($no != 0) {
                                 <li><a href="./index">Home</a></li>
                                 <li><a href="./shoping-cart">View Cart</a></li>
                                 <li><a href="./login">Order History</a></li>
+                                <li><a href="./privacypolicy">Privacy Policy</a></li>
                                 
                            
                             

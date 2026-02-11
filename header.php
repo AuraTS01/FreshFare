@@ -152,18 +152,22 @@ if (isset($_SESSION['user'])) {
                         <li><a href="./view_companies">View Registered Companies</a></li>
                         <li><a href="./enroll_company">Enroll New Company</a></li>
                         <li><a href="./order_list">View Orders List</a></li>
+                        <li><a href="./privacypolicy">Privacy Policy</a></li>
                     <?php elseif ($category === 'company'): ?>
                         <li><a href="./com_dashboard">Dashboard</a></li>
                         <li><a href="./view_company_order_list">View Order List</a></li>
                         <li><a href="./view_company_dispatched_list">View Dispatched Order List</a></li>
                         <li><a href="./com_fixPrice">Fix Price for Products</a></li>
+                        <li><a href="./privacypolicy">Privacy Policy</a></li>
                     <?php elseif ($category === 'delivery_agent'):  ?>
                         <li><a href="./deli_dashboard">Home</a></li>
                         <li><a href="./view_undeliveredOrders">View Undelivered /Delivered Orders</a></li>
+                        <li><a href="./privacypolicy">Privacy Policy</a></li>
                    <?php else: ?>
                         <li><a href="./dashboard">Home</a></li>
                         <li><a href="./shoping-cart">View Cart</a></li>
                         <li><a href="./order_history">Order History</a></li>
+                        <li><a href="./privacypolicy">Privacy Policy</a></li>
                         
                     <?php endif; ?>
                 
@@ -235,18 +239,22 @@ if (isset($_SESSION['user'])) {
                                 <li><a href="./view_companies">View Registered Companies</a></li>
                                 <li><a href="./enroll_company">Enroll New Company</a></li>
                                 <li><a href="./order_list">View Orders List</a></li>
+                                <li><a href="./privacypolicy">Privacy Policy</a></li>
                             <?php elseif ($category === 'company'): ?>
                                 <li><a href="./com_dashboard">Dashboard</a></li>
                                 <li><a href="./view_company_order_list">View Order List</a></li>
                                 <li><a href="./view_company_dispatched_list">View Dispatched Order List</a></li>
                                 <li><a href="./com_fixPrice">Fix Price for Products</a></li>
+                                <li><a href="./privacypolicy">Privacy Policy</a></li>
                             <?php elseif ($category === 'delivery_agent'):  ?>
                                 <li><a href="./deli_dashboard">Home</a></li>
                                 <li><a href="./view_undeliveredOrders">View Undelivered /Delivered Orders</a></li>
+                                <li><a href="./privacypolicy">Privacy Policy</a></li>
                             <?php else: ?>
                                 <li><a href="./dashboard">Home</a></li>
                                 <li><a href="./shoping-cart">View Cart</a></li>
                                 <li><a href="./order_history">Order History</a></li>
+                                <li><a href="./privacypolicy">Privacy Policy</a></li>
                                 
                             <?php endif; ?>
                             
